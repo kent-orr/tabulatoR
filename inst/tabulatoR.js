@@ -1,7 +1,7 @@
 (function() {
     const tabulatoROutputBinding = new Shiny.OutputBinding();
   
-    console.log("tabulatoR output binding registered");
+    console.log("output binding created");
   
     $.extend(tabulatoROutputBinding, {
       find: function(scope) {
@@ -9,6 +9,7 @@
       },
   
       renderValue: function(el, payload) {
+        console.log('payload?');
         if (!payload) return;
   
         // Reuse or initialize table

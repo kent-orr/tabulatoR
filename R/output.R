@@ -43,7 +43,7 @@ tabulatoROutput <- function(id, width = "100%", height = "400px", ...) {
   htmltools::tagList(
     htmltools::singleton(htmltools::tags$head(tab_source(...))),
     htmltools::tags$div(
-      id=id, width=width, height=height
+      id=id, class="tabulator-output", width=width, height=height
     )
   )
 }

@@ -20,7 +20,7 @@ server <- function(input, output, session) {
   # Send data to Tabulator
   output$main_table <- renderTabulatoR({
     rdata()
-  })
+  }, editable=TRUE)
 
   # Show data in console
   output$debug_output <- renderPrint({
