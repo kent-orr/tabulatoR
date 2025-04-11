@@ -26,6 +26,7 @@ server <- function(input, output, session) {
     rdata()
   }, editable=FALSE)
 
+
   # Show data in console
   output$debug_output <- renderPrint({
     list(

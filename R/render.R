@@ -21,6 +21,10 @@
 #' @param env The environment in which to evaluate `expr`.
 #' @param quoted Logical. Is `expr` already quoted? If not, it will be quoted.
 #'
+#' @details
+#' JavaScript callbacks (such as `cellClick` or `formatter`) must be wrapped using `JS()`
+#' from the `htmlwidgets` package to be interpreted as executable functions in the browser.
+#' 
 #' @return A function that returns a list to be serialized and passed to the Tabulator output binding.
 #' @export
 renderTabulatoR <- function(
@@ -70,7 +74,8 @@ renderTabulatoR <- function(
       list(...)  # ... overrides .opts by coming last
     )
     
-    payload
+    htmlwidgets:::toJSON2(payload, auto_unbox = TRUE)
+
   }
 } 
   
