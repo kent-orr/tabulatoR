@@ -2,3 +2,6 @@
 
 export(renderTabulatoR)
 export(tabulatoROutput)
+export(tabulatorProxy)
+export(tabulatorReplaceData)
+importFrom(htmlwidgets,JS)

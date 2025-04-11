@@ -11,6 +11,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     htmltools,
+    htmlwidgets,
     shiny
 Suggests: 
     testthat (>= 3.0.0)
