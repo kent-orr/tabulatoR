@@ -66,3 +66,46 @@ renderTabulatoR <- function(expr,
         }
     }
     
+#' @title Create a proxy object for an existing Tabulator table
+#'
+#' @description
+#' Use this function to send commands to an already-rendered Tabulator table
+#' in the browser, without triggering a full redraw. Useful for replacing data,
+#' selecting rows, or other JS-driven operations.
+#'
+#' @param id The output ID of the Tabulator table.
+#' @param session The Shiny session (defaults to current session).
+#'
+#' @return A proxy object to be used with other tabulatoR proxy functions.
+#' @export
+tabulatorProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
+  if (is.null(session)) stop("tabulatorProxy must be called from within a Shiny session")
+  
+  structure(
+    list(id = id, session = session),
+    class = "tabulatorProxy"
+  )
+}
+
+#' @title Replace data in an existing Tabulator table via proxy
+#' @param proxy A tabulatorProxy object created by `tabulatorProxy()`.
+#' @param data A data.frame to send to the client.
+#' @export
+tabulatorReplaceData <- function(proxy, data) {
+  if (!inherits(proxy, "tabulatorProxy")) stop("Must pass a tabulatorProxy")
+  
+  data_list <- unname(split(data, seq(nrow(data))))
+  
+  proxy$session$sendCustomMessage(
+    type = "tabulator-replace-data",
+    message = list(
+      id = proxy$id,
+      data = data_list
+    )
+  )
+}
+
+tabulatorAddData <- function(proxy, data) {
+  
+}
+
