@@ -32,7 +32,7 @@ renderTabulatoR <- function(
   columns = c(),
   autoColumns = TRUE,
   editable=TRUE,
-  events = list(),
+  events = NULL,
   ...,
   .opts = list(),
   env = parent.frame(),
