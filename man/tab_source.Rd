@@ -4,10 +4,7 @@
 \alias{tab_source}
 \title{Generate Tabulator Source Links}
 \usage{
-tab_source(
-  version = options("tabulator.version", "6.3.1"),
-  theme = "tabulator_bootstrap5"
-)
+tab_source(version = "6.3.1", theme = "tabulator_bootstrap5")
 }
 \arguments{
 \item{version}{A character string specifying the version of Tabulator to use. Defaults to "6.3.1".}

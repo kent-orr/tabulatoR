@@ -65,9 +65,56 @@ Column <- function(
 
   # Final column config: .opts first, then args, then ... (so ... wins)
   config <- c(.opts, Filter(Negate(is.null), args), list(...))
-  return(config)
+  return(list(config))
 }
 
-
-
-list(x = JS('() => {console.log("hey");}')) |> htmlwidgets:::toJSON2()
+#' @title Define an Action Column for Tabulator
+#'
+#' @description
+#' This helper function constructs a Tabulator column definition list with a button
+#' that triggers a specified action when clicked. It is suitable for use in `renderTabulatoR()`.
+#' The function provides a concise way to add interactive buttons to your Tabulator tables
+#' in Shiny applications.
+#'
+#' @details
+#' The `ActionColumn` function creates a column with a button in each cell. When the button
+#' is clicked, it triggers a JavaScript action that can interact with Shiny inputs. The action
+#' is defined by the `action` parameter, which is inserted into the JavaScript code.
+#' JavaScript callbacks must be wrapped using `JS()` from the `htmlwidgets` package to be
+#' interpreted as executable functions in the browser.
+#'
+#' @param text The text to display on the button in each cell.
+#' @param action A string representing the action to be triggered when the button is clicked.
+#' @param class The CSS class to apply to the button for styling.
+#' @param ... Additional named Tabulator column options.
+#'
+#' @return A named list representing a single column definition with an action button.
+#' @export
+ActionColumn <- function(text, action, class = 'btn btn-primary', ...) {
+    Column(
+        title = text,
+        field = action,
+        formatter = JS(glue::glue("
+        function(cell, formatterParams, onRendered) {{
+            const el = cell.getElement();
+            const Button = document.createElement('button');
+            Button.textContent = '<<text>>';
+            Button.className = '<<class>>';
+            Button.onclick = function() {{
+                const table = cell.getTable();
+                const inputId = table.id;
+                var inputVal = Shiny.shinyapp.$inputValues[inputId] || {};
+                inputVal['<<action>>'] = {{
+                    field: cell.getField(),
+                    value: flattenData(cell.getValue()),
+                    row: flattenData(cell.getRow().getData()),
+                    position: flattenData(cell.getRow().getPosition())
+                }};
+                Shiny.setInputValue(inputId, inputVal, {{ priority: 'event' }});
+            }};
+            el.appendChild(Button);
+        }}
+        ", .open = '<<', .close = '>>')),
+        ...
+    )
+}

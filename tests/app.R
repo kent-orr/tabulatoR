@@ -25,7 +25,16 @@ server <- function(input, output, session) {
   # Send data to Tabulator
   output$main_table <- renderTabulatoR({
     rdata()
-  }, editable=TRUE)
+  }, editable=TRUE
+  , columns = c(
+    Column('Car', 'car')
+    , Column('MPG', 'mpg')
+    , Column('Cyl', 'cyl')
+    , Column('Disp', 'disp')
+    , Column('HP', 'hp')
+    , ActionColumn('Delete', 'delete')
+  )
+)
 
 
   # Show data in console

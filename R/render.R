@@ -53,7 +53,7 @@ renderTabulatoR <- function(
     
     # Use provided columns if any, otherwise handle autoColumns logic
     if (length(columns) > 0) {
-      config$columns <- columns
+      config$columns <- lapply(columns, \(x) x)
     } else if (autoColumns) {
       # Auto-generate columns based on the editable flag
       config$columns <- unname(lapply(names(data), function(col) {
@@ -100,13 +100,22 @@ tabulatorProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
   )
 }
 
-#' @title Replace data in an existing Tabulator table via proxy
-#' @param proxy A tabulatorProxy object created by `tabulatorProxy()`.
-#' @param data A data.frame to send to the client.
+
+
+#' @title Replace the data in a Tabulator table via proxy
+#'
+#' @description
+#' Replaces the current table data in the browser with a new data.frame.
+#' This does not trigger a full re-render of the table.
+#'
+#' @param proxy A `tabulatorProxy` object created with `tabulatorProxy()`.
+#' @param data A `data.frame` to send to the client-side Tabulator table.
+#'
 #' @export
 tabulatorReplaceData <- function(proxy, data) {
   if (!inherits(proxy, "tabulatorProxy")) stop("Must pass a tabulatorProxy")
-  
+  if (!is.data.frame(data)) stop("Data must be a data.frame")
+
   data_list <- unname(split(data, seq(nrow(data))))
   
   proxy$session$sendCustomMessage(
@@ -118,8 +127,53 @@ tabulatorReplaceData <- function(proxy, data) {
   )
 }
 
-tabulatorAddData <- function(proxy, data) {
+#' @title Append rows to a Tabulator table via proxy
+#'
+#' @description
+#' Adds new rows to the top or bottom of an existing Tabulator table.
+#'
+#' @param proxy A `tabulatorProxy` object created with `tabulatorProxy()`.
+#' @param data A `data.frame` of rows to add.
+#' @param add_to Whether to add rows to the "top" or "bottom" of the table.
+#'
+#' @export
+tabulatorAddData <- function(proxy, data, add_to = c("top", "bottom")) {
+  if (!inherits(proxy, "tabulatorProxy")) stop("Must pass a tabulatorProxy")
+  if (!is.data.frame(data)) stop("Data must be a data.frame")
   
+  add_to <- match.arg(add_to)
+  data_list <- unname(split(data, seq(nrow(data))))
+
+  proxy$session$sendCustomMessage(
+    type = "tabulator-add-data",
+    message = list(
+      id = proxy$id,
+      data = data_list,
+      addToTop = add_to == "top"
+    )
+  )
 }
+
+#' @title Remove a row from a Tabulator table by index
+#'
+#' @description
+#' Removes a row from the table using Tabulator's internal row index system.
+#' This is not the R row number — it is the index returned from a Tabulator event
+#' (e.g., `input$my_table$rowClick$index`).
+#'
+#' @param proxy A `tabulatorProxy` object created with `tabulatorProxy()`.
+#' @param index An integer index corresponding to the Tabulator row index.
+#'   Use the `index` value from an event payload (e.g., `input$my_table$cellClick$index`).
+#'
+#' @export
+tabulatorRemoveRow <- function(proxy, index) {
+  if (!inherits(proxy, "tabulatorProxy")) stop("Must pass a tabulatorProxy")
   
-  
+  proxy$session$sendCustomMessage(
+    type = "tabulator-remove-row",
+    message = list(
+      id = proxy$id,
+      index = index
+    )
+  )
+}  
