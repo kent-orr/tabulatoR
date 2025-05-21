@@ -24,11 +24,12 @@ server <- function(input, output, session) {
 
   # Send data to Tabulator
   output$main_table <- renderTabulatoR({
+    print('re-rendering the table')
     rdata()
   }, editable=TRUE
   , columns = c(
     Column('Car', 'car')
-    , Column('MPG', 'mpg')
+    , Column('MPG', 'mpg', editable=TRUE, editor = 'input')
     , Column('Cyl', 'cyl')
     , Column('Disp', 'disp')
     , Column('HP', 'hp')
