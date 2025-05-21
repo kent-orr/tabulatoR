@@ -91,30 +91,33 @@ Column <- function(
 #' @return A named list representing a single column definition with an action button.
 #' @export
 ActionColumn <- function(text, action, class = 'btn btn-primary', ...) {
-    Column(
-        title = text,
-        field = action,
-        formatter = JS(glue::glue("
-        function(cell, formatterParams, onRendered) {{
-            const el = cell.getElement();
-            const Button = document.createElement('button');
-            Button.textContent = '<<text>>';
-            Button.className = '<<class>>';
-            Button.onclick = function() {{
-                const table = cell.getTable();
-                const inputId = table.id;
-                var inputVal = Shiny.shinyapp.$inputValues[inputId] || {};
-                inputVal['<<action>>'] = {{
-                    field: cell.getField(),
-                    value: flattenData(cell.getValue()),
-                    row: flattenData(cell.getRow().getData()),
-                    position: flattenData(cell.getRow().getPosition())
-                }};
-                Shiny.setInputValue(inputId, inputVal, {{ priority: 'event' }});
-            }};
-            el.appendChild(Button);
-        }}
-        ", .open = '<<', .close = '>>')),
-        ...
-    )
+    js_code <- glue::glue("
+  function(cell, formatterParams, onRendered) {
+    const el = cell.getElement();
+    const Button = document.createElement('button');
+    Button.textContent = '<<text>>';
+    Button.className = '<<class>>';
+    Button.onclick = function() {
+      const table = cell.getTable();
+      const inputId = table.id;
+      const inputVal = Shiny.shinyapp.$inputValues[inputId] || {};
+      inputVal['<<action>>'] = {
+        event: '<<action>>',
+        field: cell.getField(),
+        value: flattenData(cell.getValue()),
+        row: flattenData(cell.getRow().getData()),
+        position: flattenData(cell.getRow().getPosition())
+      };
+      Shiny.setInputValue(inputId, inputVal, { priority: 'event' });
+    };
+    el.appendChild(Button);
+  }
+", .open = "<<", .close = ">>")
+
+Column(
+  title = text,
+  field = action,
+  formatter = JS(js_code),
+  ...
+)
 }
