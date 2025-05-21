@@ -53,7 +53,7 @@ renderTabulatoR <- function(
     
     # Use provided columns if any, otherwise handle autoColumns logic
     if (length(columns) > 0) {
-      config$columns <- lapply(columns, \(x) x)
+      config$columns <- columns
     } else if (autoColumns) {
       # Auto-generate columns based on the editable flag
       config$columns <- unname(lapply(names(data), function(col) {
@@ -73,7 +73,7 @@ renderTabulatoR <- function(
       .opts,
       list(...)  # ... overrides .opts by coming last
     )
-    
+
     htmlwidgets:::toJSON2(payload, auto_unbox = TRUE)
 
   }
