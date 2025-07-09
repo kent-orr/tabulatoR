@@ -94,25 +94,20 @@ const defaultEventHandlers = {
             
             Object.keys(mergedEvents).forEach(eventName => {
                 const handler = mergedEvents[eventName];
-                
+
                 table.on(eventName, (...args) => {
                     console.log(`📥 Tabulator event: ${eventName}`, args);
                     
                     // Run user-defined or default extractor
                     const payload = typeof handler === "function"
                     ? handler(...args)
-                    : { [eventName]: { args } };  // fallback if user provides TRUE
+                    : { [eventName]: { args } };
                     
-                    // Retrieve the current input value from Shiny
-                    const currentInputValue = Shiny.shinyapp.$inputValues[el.id] || {};
-                    
-                    // Merge the new payload with the existing input value
-                    const updatedInputValue = { ...currentInputValue, ...payload };
-                    
-                    // Send the updated input value to Shiny
-                    Shiny.setInputValue(el.id, updatedInputValue, { priority: "event" });
+                    // Explicitly set only the latest event (no merge!)
+                    Shiny.setInputValue(el.id, payload, { priority: "event" });
                 });
             });
+
 
             // proxy functions
             Shiny.addCustomMessageHandler('tabulator-replace-data', function(message) {
