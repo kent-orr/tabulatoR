@@ -10,9 +10,10 @@
 #'                be a list representing a column config (e.g., `list(field = "name", editable = TRUE)`).
 #'                This ensures JSON serializes correctly as an array, not a named list. See
 #'                <https://tabulator.info/docs/6.3/columns> for full details.
+#' @param layout a string defining the overall table layout. https://tabulator.info/docs/6.3/layout#layout
 #' @param autoColumns Logical. If `TRUE`, columns will be auto-generated from the data.
 #'                Set to `FALSE` if you're supplying a custom column definitions.
-#' @param editable Logical. If `TRUE`, the autocolumn cells will be editable.
+#' @param editable Logical. If `TRUE`, the cells can be editable. Pair with editor=<editgor_type> when not using autocolumns. 
 #' @param options A named list of additional Tabulator options (e.g. pagination, layout).
 #' @param events A named list of JS events that should be sent back to Shiny as input values.
 #' @param ... Additional named elements to include in the payload passed to the front-end.
@@ -30,6 +31,7 @@
 renderTabulatoR <- function(
   expr,
   columns = c(),
+  layout='fitColumns',
   autoColumns = TRUE,
   editable=TRUE,
   events = NULL,
