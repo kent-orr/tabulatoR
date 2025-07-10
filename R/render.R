@@ -65,7 +65,7 @@ renderTabulatoR <- function(
       config$autoColumns <- TRUE
     }
     
-    config <- c(config, .opts, list(...))
+    config <- c(config, layout=layout, .opts, list(...))
     
     payload <- c(
       list(
