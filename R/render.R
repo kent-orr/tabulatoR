@@ -63,15 +63,13 @@ renderTabulatoR <- function(
       config$autoColumns <- TRUE
     }
     
-    config <- c(config, options)
+    config <- c(config, .opts, list(...))
     
     payload <- c(
       list(
         options = config,
         events = events
-      ),
-      .opts,
-      list(...)  # ... overrides .opts by coming last
+      )
     )
 
     htmlwidgets:::toJSON2(payload, auto_unbox = TRUE)
