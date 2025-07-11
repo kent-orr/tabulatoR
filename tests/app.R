@@ -30,7 +30,7 @@ server <- function(input, output, session) {
   , columns = c(
     Column('Car', 'car')
     , Column('MPG', 'mpg', editable=TRUE, editor = 'input')
-    , Column('Cyl', 'cyl')
+    , Column('Cyl', 'cyl', formatter = js('() => {console.log("hello world")}'))
     , Column('Disp', 'disp')
     , Column('HP', 'hp')
     , ActionColumn('Delete', 'delete')

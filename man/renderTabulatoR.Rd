@@ -7,6 +7,7 @@
 renderTabulatoR(
   expr,
   columns = c(),
+  layout = "fitColumns",
   autoColumns = TRUE,
   editable = TRUE,
   events = NULL,
@@ -24,10 +25,12 @@ be a list representing a column config (e.g., \code{list(field = "name", editabl
 This ensures JSON serializes correctly as an array, not a named list. See
 \url{https://tabulator.info/docs/6.3/columns} for full details.}
 
+\item{layout}{a string defining the overall table layout. https://tabulator.info/docs/6.3/layout#layout}
+
 \item{autoColumns}{Logical. If \code{TRUE}, columns will be auto-generated from the data.
 Set to \code{FALSE} if you're supplying a custom column definitions.}
 
-\item{editable}{Logical. If \code{TRUE}, the autocolumn cells will be editable.}
+\item{editable}{Logical. If \code{TRUE}, the cells can be editable. Pair with editor=<editgor_type> when not using autocolumns.}
 
 \item{events}{A named list of JS events that should be sent back to Shiny as input values.}
 
