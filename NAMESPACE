@@ -2,6 +2,7 @@
 
 export(ActionColumn)
 export(Column)
+export(js)
 export(renderTabulatoR)
 export(tabulatoROutput)
 export(tabulatorAddData)
