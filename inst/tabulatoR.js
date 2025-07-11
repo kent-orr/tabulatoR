@@ -1,3 +1,39 @@
+function parseJSValue(val) {
+  const startTag = '<js>';
+  const endTag = '</js>';
+
+  if (typeof val === 'string' && val.startsWith(startTag) && val.endsWith(endTag)) {
+    const body = val.slice(startTag.length, -endTag.length);
+    try {
+      return eval(`(${body})`); // Make it a callable function
+    } catch (e) {
+      console.warn("Failed to evaluate <js> string:", body, e);
+      return null; // Or return a fallback formatter like `(cell) => cell.getValue()`
+    }
+  }
+
+  return val;
+}
+
+
+
+
+function recursivelyUnwrapJS(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(recursivelyUnwrapJS);
+  } else if (obj !== null && typeof obj === 'object') {
+    const out = {};
+    for (const key in obj) {
+      out[key] = recursivelyUnwrapJS(obj[key]);
+    }
+    return out;
+  } else {
+    return parseJSValue(obj);
+  }
+}
+
+
+
 function flattenData(data) {
     if (Array.isArray(data) && data.length === 1) {
         return flattenData(data[0]); // Unwrap single-item arrays
@@ -75,9 +111,12 @@ const defaultEventHandlers = {
                 return;
             }
             
-            const options = payload.options || {};
+            let options = payload.options || {};
+            options = recursivelyUnwrapJS(options);
+            
             console.log("Initializing Tabulator with options:", options);
             const table = new Tabulator(el, options);
+
             el._tabulator = table;
 
             // attach the table to a global var

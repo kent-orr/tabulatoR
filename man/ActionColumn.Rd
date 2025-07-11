@@ -4,12 +4,14 @@
 \alias{ActionColumn}
 \title{Define an Action Column for Tabulator}
 \usage{
-ActionColumn(text, action)
+ActionColumn(text, action, class = "btn btn-primary", ...)
 }
 \arguments{
 \item{text}{The text to display on the button in each cell.}
 
 \item{action}{A string representing the action to be triggered when the button is clicked.}
+
+\item{class}{The CSS class to apply to the button for styling.}
 
 \item{...}{Additional named Tabulator column options.}
 }
