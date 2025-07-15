@@ -144,7 +144,7 @@ tabulatorAddData <- function(id, data, add_to = c("top", "bottom"), session = ge
 #' @export
 tabulatorRemoveRow <- function(id, index, session = getDefaultReactiveDomain()) {
   
-  proxy$session$sendCustomMessage(
+  session$sendCustomMessage(
     type = "tabulator-remove-row",
     message = list(
       id = id,
@@ -152,3 +152,21 @@ tabulatorRemoveRow <- function(id, index, session = getDefaultReactiveDomain()) 
     )
   )
 }  
+
+#' @title Restore the old value in a cell after editing
+#'
+#' @description
+#' Restores the old value in a cell after editing, useful for preserving the original if validation fails.
+#' 
+#' @inheritParams tabulatorRemoveRow
+#' 
+tabulatorRestoreOldValue <- function(id, index, field, session = getDefaultReactiveDomain()) {
+    session$sendCustomMessage(
+        type = "tabulator-restore-old-value",
+        message = list(
+            id = id,
+            index = index,
+            field = field
+        )
+    )
+}

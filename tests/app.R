@@ -100,35 +100,45 @@ server <- function(input, output, session) {
     
     row.names(y) <- input$new_row_name
     tabulatorAddData('table', y)
-    z = rbind(x, y)
-    datum(z)
     removeModal()
   })
 
   # Update data when user edits the table
   observeEvent(input$table, {
     edit = input$table
-    # makes an edit
-    if (!is.null(edit$cellEdited)) {
-        edit <- edit$cellEdited
+    
+    # Check the action type from the flattened structure
+    if (edit$action == "cellEdited") {
         id = edit$row$id
         x <- datum()
         x[x$id == id,][[edit$field]] <- edit$value
         datum(x)
         showNotification(paste("Edited row:", id, edit$field, edit$value))
-    # delete a row
-    } else if (!is.null(edit$rowDeleted)) {
-        edit = edit$rowDeleted
+    
+    # Handle row deletion
+    } else if (edit$action == "rowDeleted") {
         id = edit$row$id
         x <- datum()
-        x <- x[x$id!= id,]
+        x <- x[x$id != id,]
         datum(x)
         showNotification(paste("Deleted row:", id))
-    # add a new row
-    } else if (!is.null(edit$rowAdded)) {
-        
+    
+    # Handle row addition
+    } else if (edit$action == "rowAdded") {
+        # Get the new row data
+        new_row = edit$row
+        x <- datum()
+        # Make sure the new row has all required columns
+        for (col in names(x)) {
+            if (is.null(new_row[[col]])) {
+                new_row[[col]] <- NA
+            }
+        }
+        # Add the row to our reactive data
+        z = rbind(x, new_row)
+        datum(z)
+        showNotification(paste("Added new row with id:", new_row$id))
     }
-
   })
 
   observeEvent(input$view_row, {
