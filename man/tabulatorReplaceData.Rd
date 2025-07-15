@@ -4,12 +4,16 @@
 \alias{tabulatorReplaceData}
 \title{Replace the data in a Tabulator table via proxy}
 \usage{
-tabulatorReplaceData(proxy, data)
+tabulatorReplaceData(id, data, session = getDefaultReactiveDomain())
 }
 \arguments{
-\item{proxy}{A \code{tabulatorProxy} object created with \code{tabulatorProxy()}.}
+\item{id}{The ID of the Tabulator table.}
 
 \item{data}{A \code{data.frame} to send to the client-side Tabulator table.}
+
+\item{session}{The Shiny session object.}
+
+\item{proxy}{A \code{tabulatorProxy} object created with \code{tabulatorProxy()}.}
 }
 \description{
 Replaces the current table data in the browser with a new data.frame.

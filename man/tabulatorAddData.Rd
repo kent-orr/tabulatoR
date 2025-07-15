@@ -4,14 +4,21 @@
 \alias{tabulatorAddData}
 \title{Append rows to a Tabulator table via proxy}
 \usage{
-tabulatorAddData(proxy, data, add_to = c("top", "bottom"))
+tabulatorAddData(
+  id,
+  data,
+  add_to = c("top", "bottom"),
+  session = getDefaultReactiveDomain()
+)
 }
 \arguments{
-\item{proxy}{A \code{tabulatorProxy} object created with \code{tabulatorProxy()}.}
+\item{id}{The ID of the Tabulator table.}
 
-\item{data}{A \code{data.frame} of rows to add.}
+\item{data}{A \code{data.frame} to send to the client-side Tabulator table.}
 
 \item{add_to}{Whether to add rows to the "top" or "bottom" of the table.}
+
+\item{session}{The Shiny session object.}
 }
 \description{
 Adds new rows to the top or bottom of an existing Tabulator table.
