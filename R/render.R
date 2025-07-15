@@ -79,49 +79,27 @@ renderTabulatoR <- function(
   }
 } 
   
-#' @title Create a proxy object for an existing Tabulator table
-#'
-#' @description
-#' Use this function to send commands to an already-rendered Tabulator table
-#' in the browser, without triggering a full redraw. Useful for replacing data,
-#' selecting rows, or other JS-driven operations.
-#'
-#' @param id The output ID of the Tabulator table.
-#' @param session The Shiny session (defaults to current session).
-#'
-#' @return A proxy object to be used with other tabulatoR proxy functions.
-#' @export
-tabulatorProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
-  if (is.null(session)) stop("tabulatorProxy must be called from within a Shiny session")
-  
-  structure(
-    list(id = id, session = session),
-    class = "tabulatorProxy"
-  )
-}
-
-
-
 #' @title Replace the data in a Tabulator table via proxy
 #'
 #' @description
 #' Replaces the current table data in the browser with a new data.frame.
 #' This does not trigger a full re-render of the table.
 #'
+#' @param id The ID of the Tabulator table.
 #' @param proxy A `tabulatorProxy` object created with `tabulatorProxy()`.
 #' @param data A `data.frame` to send to the client-side Tabulator table.
+#' @param session The Shiny session object.
 #'
 #' @export
-tabulatorReplaceData <- function(proxy, data) {
-  if (!inherits(proxy, "tabulatorProxy")) stop("Must pass a tabulatorProxy")
+tabulatorReplaceData <- function(id, data, session = getDefaultReactiveDomain()) {
   if (!is.data.frame(data)) stop("Data must be a data.frame")
 
   data_list <- unname(split(data, seq(nrow(data))))
   
-  proxy$session$sendCustomMessage(
+  session$sendCustomMessage(
     type = "tabulator-replace-data",
     message = list(
-      id = proxy$id,
+      id = id,
       data = data_list
     )
   )
@@ -131,23 +109,21 @@ tabulatorReplaceData <- function(proxy, data) {
 #'
 #' @description
 #' Adds new rows to the top or bottom of an existing Tabulator table.
-#'
-#' @param proxy A `tabulatorProxy` object created with `tabulatorProxy()`.
-#' @param data A `data.frame` of rows to add.
+#' 
+#' @inheritParams tabulatorReplaceData
 #' @param add_to Whether to add rows to the "top" or "bottom" of the table.
 #'
 #' @export
-tabulatorAddData <- function(proxy, data, add_to = c("top", "bottom")) {
-  if (!inherits(proxy, "tabulatorProxy")) stop("Must pass a tabulatorProxy")
+tabulatorAddData <- function(id, data, add_to = c("top", "bottom"), session = getDefaultReactiveDomain()) {
   if (!is.data.frame(data)) stop("Data must be a data.frame")
   
   add_to <- match.arg(add_to)
   data_list <- unname(split(data, seq(nrow(data))))
 
-  proxy$session$sendCustomMessage(
+  session$sendCustomMessage(
     type = "tabulator-add-data",
     message = list(
-      id = proxy$id,
+      id = id,
       data = data_list,
       addToTop = add_to == "top"
     )
@@ -161,18 +137,17 @@ tabulatorAddData <- function(proxy, data, add_to = c("top", "bottom")) {
 #' This is not the R row number — it is the index returned from a Tabulator event
 #' (e.g., `input$my_table$rowClick$index`).
 #'
-#' @param proxy A `tabulatorProxy` object created with `tabulatorProxy()`.
+#' @inheritParams tabulatorReplaceData
 #' @param index An integer index corresponding to the Tabulator row index.
 #'   Use the `index` value from an event payload (e.g., `input$my_table$cellClick$index`).
 #'
 #' @export
-tabulatorRemoveRow <- function(proxy, index) {
-  if (!inherits(proxy, "tabulatorProxy")) stop("Must pass a tabulatorProxy")
+tabulatorRemoveRow <- function(id, index, session = getDefaultReactiveDomain()) {
   
   proxy$session$sendCustomMessage(
     type = "tabulator-remove-row",
     message = list(
-      id = proxy$id,
+      id = id,
       index = index
     )
   )
