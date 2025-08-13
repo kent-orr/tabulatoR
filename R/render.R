@@ -1,3 +1,82 @@
+#' Flatten nested column lists into a flat list of column objects
+#'
+#' @param columns A list or vector that may contain nested column definitions
+#' @return A flat list of column objects
+#' @keywords internal
+flatten_columns <- function(columns) {
+    if (length(columns) == 0) {
+        return(structure(list(), names = NULL))
+    }
+    
+    result <- list()
+    
+    for (i in seq_along(columns)) {
+        item <- columns[[i]]
+        
+        # Unwrap single-element lists that contain the actual column definition
+        # This handles Column() function output: list(list(title=..., field=...))
+        while (is.list(item) && length(item) == 1 && is.list(item[[1]])) {
+            item <- item[[1]]
+        }
+        
+        result[[length(result) + 1]] <- item
+    }
+    
+    # Return unnamed list to match c() behavior
+    structure(result, names = NULL)
+}
+
+renderTabulatoR <- function(
+  expr,
+  columns = c(),
+  layout='fitColumns',
+  autoColumns = TRUE,
+  editable=TRUE,
+  events = NULL,
+  ...,
+  .opts = list(),
+  env = parent.frame(),
+  quoted = FALSE) {
+    
+  func <- shiny::exprToFunction(expr, env, quoted)
+  
+  function() {
+    data <- func()
+    if (!is.data.frame(data)) stop("Reactive must return a data.frame")
+    
+    # Convert to list of rows
+    data_list <- unname(split(data, seq(nrow(data))))
+    
+    config <- list(
+      data = data_list
+    )
+    
+    # Use provided columns if any, otherwise handle autoColumns logic
+    if (length(columns) > 0) {
+        config$columns <- flatten_columns(columns)
+    } else if (autoColumns) {
+        # Auto-generate columns based on the editable flag
+        config$columns <- unname(lapply(names(data), function(col) {
+            list(title = col, field = col, editor = if(editable) TRUE else NULL)
+        }))
+    } else {
+        config$autoColumns <- TRUE
+    }
+    
+    config <- c(config, layout=layout, .opts, list(...))
+    
+    payload <- c(
+      list(
+        options = config,
+        events = events
+      )
+    )
+
+    htmlwidgets:::toJSON2(payload, auto_unbox = TRUE)
+
+  }
+}
+
 #' @title Render a Tabulator Table in Shiny
 #'
 #' @description
@@ -6,10 +85,10 @@
 #' custom tabulatoR JavaScript output binding.
 #'
 #' @param expr A reactive expression that returns a `data.frame`.
-#' @param columns An array (i.e., `c(...)`) of column definitions for Tabulator. Each element must
+#' @param columns An array (`c(...)`) or list of column definitions for Tabulator. Each element must
 #'                be a list representing a column config (e.g., `list(field = "name", editable = TRUE)`).
-#'                This ensures JSON serializes correctly as an array, not a named list. See
-#'                <https://tabulator.info/docs/6.3/columns> for full details.
+#'                Any lists are coerced into an unnamed vector to ensure JSON serializes as an array.
+#'                See <https://tabulator.info/docs/6.3/columns> for full details.
 #' @param layout a string defining the overall table layout. https://tabulator.info/docs/6.3/layout#layout
 #' @param autoColumns Logical. If `TRUE`, columns will be auto-generated from the data.
 #'                Set to `FALSE` if you're supplying a custom column definitions.
@@ -55,14 +134,18 @@ renderTabulatoR <- function(
     
     # Use provided columns if any, otherwise handle autoColumns logic
     if (length(columns) > 0) {
-      config$columns <- columns
+        # Flatten nested lists - keep unwrapping until we have a flat list of column objects
+        while (any(vapply(columns, function(x) length(x) == 1 && is.list(x[[1]]), logical(1)))) {
+            columns <- unlist(columns, recursive = FALSE)
+        }
+        config$columns <- unname(columns)
     } else if (autoColumns) {
-      # Auto-generate columns based on the editable flag
-      config$columns <- unname(lapply(names(data), function(col) {
-        list(title = col, field = col, editor = if(editable) TRUE else NULL)
-      }))
+        # Auto-generate columns based on the editable flag
+        config$columns <- unname(lapply(names(data), function(col) {
+            list(title = col, field = col, editor = if(editable) TRUE else NULL)
+        }))
     } else {
-      config$autoColumns <- TRUE
+        config$autoColumns <- TRUE
     }
     
     config <- c(config, layout=layout, .opts, list(...))

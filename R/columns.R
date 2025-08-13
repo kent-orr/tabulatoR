@@ -51,6 +51,17 @@ Column <- function(
     ...,
     .opts = list()
 ) {
+    editable_missing <- missing(editable)
+    editor_missing <- missing(editor)
+
+    if (!editor_missing && editable_missing) {
+        editable <- TRUE
+    }
+
+    if (isTRUE(editable) && editor_missing) {
+        editor <- TRUE
+    }
+
     args <- list(
         title = title,
         field = field,
