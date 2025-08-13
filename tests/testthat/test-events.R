@@ -4,7 +4,7 @@ library(shiny)
 test_that("default event handlers are defined", {
     js_file <- system.file("tabulatoR.js", package = "tabulatoR")
     js_lines <- readLines(js_file)
-    start <- grep("const defaultEventHandlers = \\\{", js_lines)
+    start <- grep("const defaultEventHandlers = \\{", js_lines)
     end <- start + which(js_lines[start:length(js_lines)] == "};")[1] - 1
     block <- js_lines[(start + 1):end]
     keys <- sub("^\\s*([a-zA-Z0-9]+):.*", "\\1", block[grepl("^[\\s]*[a-zA-Z0-9]+:", block)])
