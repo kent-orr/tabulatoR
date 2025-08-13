@@ -3,6 +3,7 @@
 export(ActionColumn)
 export(Column)
 export(js)
+export(preview_static)
 export(renderTabulatoR)
 export(tabulatoROutput)
 export(tabulatorAddData)
