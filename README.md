@@ -140,8 +140,16 @@ Column("Internal ID", "internal_id", visible = FALSE)
 
 
 ## Making a column editable
-- talk about editors
-- briefly mention that editorcs can be formatted
+
+You can enable editing in two ways:
+
+```r
+# Explicit editor implicitly enables editing
+Column("Name", "name", editor = "input")
+
+# Let Tabulator guess the editor
+Column("Age", "age", editable = TRUE)
+```
 
 ## Listening for events
 - talk abou the naming convention for the inputs sent to the shiny app

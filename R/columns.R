@@ -10,6 +10,8 @@
 #' For the full list of column options, see the [Tabulator documentation](https://tabulator.info/docs/6.3/columns#definition).
 #' JavaScript callbacks (such as `cellClick` or `formatter`) must be wrapped using `js()`
 #' from this package to be interpreted as executable functions in the browser.
+#' Supplying `editor` implicitly enables editing. If `editable = TRUE` and no
+#' `editor` is provided, Tabulator attempts to guess the editor (`editor = TRUE`).
 #'
 #' @param title The column title to display in the table header.
 #' @param field The field name in the data corresponding to this column.
@@ -17,8 +19,10 @@
 #' @param hozAlign Horizontal text alignment for cells (`"left"`, `"center"`, `"right"`).
 #' @param width A fixed column width (e.g., "150px" or "20%").
 #' @param resizable Logical. Whether the user can resize this column.
-#' @param editable Logical. If `TRUE`, the cells are editable.
-#' @param editor Editor type (`"input"`, `"number"`, etc.) or JS function via `js()`.
+#' @param editable Logical. If `TRUE`, the cells are editable. When set to `TRUE`
+#'   and `editor` is `NULL`, Tabulator guesses the editor (`editor = TRUE`).
+#' @param editor Editor type (`"input"`, `"number"`, etc.) or JS function via
+#'   `js()`. Supplying this parameter implicitly enables editing.
 #' @param editorParams A list of parameters passed to the editor.
 #' @param formatter Formatter name or JS function (use `js()`).
 #' @param formatterParams A list of parameters passed to the formatter.
