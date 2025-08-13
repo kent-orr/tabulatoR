@@ -31,41 +31,41 @@
 #' @return A named list representing a single column definition.
 #' @export
 Column <- function(
-  title,
-  field, 
-  visible = TRUE, 
-  hozAlign = NULL,
-  width = NULL,
-  resizable = NULL,
-  editable = FALSE,
-  editor = NULL,
-  editorParams = NULL,
-  formatter = NULL,
-  formatterParams = NULL,
-  cellClick = NULL, 
-  cellEdited = NULL,
-  ...,
-  .opts = list()
+    title,
+    field,
+    visible = TRUE,
+    hozAlign = NULL,
+    width = NULL,
+    resizable = NULL,
+    editable = FALSE,
+    editor = NULL,
+    editorParams = NULL,
+    formatter = NULL,
+    formatterParams = NULL,
+    cellClick = NULL,
+    cellEdited = NULL,
+    ...,
+    .opts = list()
 ) {
-  args <- list(
-    title = title,
-    field = field,
-    visible = visible,
-    hozAlign = hozAlign,
-    width = width,
-    resizable = resizable,
-    editable = editable,
-    editor = editor,
-    editorParams = editorParams,
-    formatter = formatter,
-    formatterParams = formatterParams,
-    cellClick = cellClick,
-    cellEdited = cellEdited
-  )
+    args <- list(
+        title = title,
+        field = field,
+        visible = visible,
+        hozAlign = hozAlign,
+        width = width,
+        resizable = resizable,
+        editable = editable,
+        editor = editor,
+        editorParams = editorParams,
+        formatter = formatter,
+        formatterParams = formatterParams,
+        cellClick = cellClick,
+        cellEdited = cellEdited
+    )
 
-  # Final column config: .opts first, then args, then ... (so ... wins)
-  config <- c(.opts, Filter(Negate(is.null), args), list(...))
-  return(list(config))
+    # Final column config: .opts first, then args, then ... (so ... wins)
+    config <- c(.opts, Filter(Negate(is.null), args), list(...))
+    return(list(config))
 }
 
 #' @title Define an Action Column for Tabulator
@@ -83,26 +83,35 @@ Column <- function(
 #' JavaScript callbacks must be wrapped using `JS()` from the `htmlwidgets` package to be
 #' interpreted as executable functions in the browser.
 #'
-#' @param text The text to display on the button in each cell.
+#' @param label The label to display on the button in each cell.
 #' @param action A string representing the action to be triggered when the button is clicked.
+#' @param icon An optional icon to display inside the button. Use `shiny::icon()`.
 #' @param class The CSS class to apply to the button for styling.
 #' @param ... Additional named Tabulator column options.
 #'
 #' @return A named list representing a single column definition with an action button.
 #' @export
-ActionColumn <- function(text, action, class = 'btn btn-primary', ...) {
-    js_code <- glue::glue("
-  function(cell, formatterParams, onRendered) {
+ActionColumn <- function(label, action, icon = NULL, class = 'btn btn-primary', ...) {
+    icon_html <- if (!is.null(icon)) as.character(icon) else ''
+    label_html <- htmltools::htmlEscape(label)
+    content_html <- paste0(icon_html, label_html)
+
+    class_js <- jsonlite::toJSON(class, auto_unbox = TRUE)
+    content_js <- jsonlite::toJSON(content_html, auto_unbox = TRUE)
+    action_js <- jsonlite::toJSON(action, auto_unbox = TRUE)
+
+    js_code <- glue::glue(
+"  function(cell, formatterParams, onRendered) {
     const el = cell.getElement();
     const Button = document.createElement('button');
-    Button.textContent = '<<text>>';
-    Button.className = '<<class>>';
+    Button.className = <<class_js>>;
+    Button.innerHTML = <<content_js>>;
     Button.onclick = function() {
       const table = cell.getTable();
       const inputId = table.id;
       const inputVal = Shiny.shinyapp.$inputValues[inputId] || {};
-      inputVal['<<action>>'] = {
-        event: '<<action>>',
+      inputVal[<<action_js>>] = {
+        event: <<action_js>>,
         field: cell.getField(),
         value: flattenData(cell.getValue()),
         row: flattenData(cell.getRow().getData()),
@@ -114,10 +123,12 @@ ActionColumn <- function(text, action, class = 'btn btn-primary', ...) {
   }
 ", .open = "<<", .close = ">>")
 
-Column(
-  title = text,
-  field = action,
-  formatter = JS(js_code),
-  ...
-)
+    Column(
+        title = label,
+        field = action,
+        formatter = JS(js_code),
+        ...
+    )
 }
+
+
