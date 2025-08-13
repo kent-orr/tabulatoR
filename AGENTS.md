@@ -8,3 +8,4 @@
 - Do not use htmltools::JS, instead use the tabulatoR::js function
 
 - when going to test, use pkgload::load_all() instead of installing devtools. 
+- If you're going to run tests while coding, you should start with `R -e "install.packages(c('testthat', 'pkgload', 'htmltools', 'htmlwidgets'))"` for dependencies and work form there based on what errors. 
