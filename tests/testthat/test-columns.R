@@ -15,7 +15,7 @@ test_that("ActionColumn returns expected list", {
   expected <- Column(
     title = "Edit",
     field = "edit",
-    formatter = htmlwidgets::JS(js_code)
+    formatter = js(js_code)
   )
   expect_equal(ActionColumn("Edit", "edit"), expected)
 })

@@ -37,17 +37,17 @@ Column(
 
 \item{editable}{Logical. If \code{TRUE}, the cells are editable.}
 
-\item{editor}{Editor type (\code{"input"}, \code{"number"}, etc.) or JS function via \code{JS()}.}
+\item{editor}{Editor type (\code{"input"}, \code{"number"}, etc.) or JS function via \code{js()}.}
 
 \item{editorParams}{A list of parameters passed to the editor.}
 
-\item{formatter}{Formatter name or JS function (use \code{JS()}).}
+\item{formatter}{Formatter name or JS function (use \code{js()}).}
 
 \item{formatterParams}{A list of parameters passed to the formatter.}
 
-\item{cellClick}{JS function triggered when a cell is clicked (use \code{JS()}).}
+\item{cellClick}{JS function triggered when a cell is clicked (use \code{js()}).}
 
-\item{cellEdited}{JS function triggered after a cell is edited (use \code{JS()}).}
+\item{cellEdited}{JS function triggered after a cell is edited (use \code{js()}).}
 
 \item{...}{Additional named Tabulator column options.}
 
@@ -65,6 +65,6 @@ API via \code{...} or \code{.opts}.
 }
 \details{
 For the full list of column options, see the \href{https://tabulator.info/docs/6.3/columns#definition}{Tabulator documentation}.
-JavaScript callbacks (such as \code{cellClick} or \code{formatter}) must be wrapped using \code{JS()}
-from the \code{htmlwidgets} package to be interpreted as executable functions in the browser.
+JavaScript callbacks (such as \code{cellClick} or \code{formatter}) must be wrapped using \code{js()}
+from this package to be interpreted as executable functions in the browser.
 }

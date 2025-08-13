@@ -19,7 +19,7 @@ test_that("renderTabulatoR serializes custom event handlers", {
     shiny::withReactiveDomain(session, {
         rv <- reactiveVal(data.frame(a = 1))
         custom <- renderTabulatoR(rv(), events = list(
-            cellClick = htmlwidgets::JS("function(){ return { action: 'custom' }; }")
+            cellClick = js("function(){ return { action: 'custom' }; }")
         ))
         json <- shiny::isolate(custom())
         payload <- jsonlite::fromJSON(json)
