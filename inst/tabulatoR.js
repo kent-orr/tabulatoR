@@ -85,6 +85,21 @@ function flattenData(data) {
         return data; // Return the value as is if it's not an array or object
 }
 
+function extract_cell_event(cell, action, include_old = false) {
+    const row = cell.getRow();
+    const event = {
+        action,
+        field: cell.getField(),
+        value: flattenData(cell.getValue()),
+        row: flattenData(row.getData()),
+        index: flattenData(row.getPosition())
+    };
+    if (include_old) {
+        event.old_value = flattenData(cell.getOldValue());
+    }
+    return event;
+}
+
 /**
  * Default event handlers for Tabulator events
  * These functions process Tabulator events and format them for Shiny input values
@@ -98,41 +113,21 @@ const defaultEventHandlers = {
          * @param {Cell} cell - The Tabulator cell component that was clicked
          * @returns {Object} Formatted data about the clicked cell including field, value, and row data
          */
-        cellClick: (e, cell) => ({
-                action: 'cellClick',
-                field: cell.getField(),
-                value: flattenData(cell.getValue()),
-                row: flattenData(cell.getRow().getData()),
-                index: flattenData(cell.getRow().getPosition())
-        }),
+        cellClick: (e, cell) => extract_cell_event(cell, 'cellClick'),
         
         /**
          * Handles cell edit events
          * @param {Cell} cell - The Tabulator cell component that was edited
          * @returns {Object} Formatted data about the edited cell including field, new value, old value, and row data
          */
-        cellEdited: (cell) => ({
-                action: 'cellEdited',
-                field: cell.getField(),
-                value: flattenData(cell.getValue()),
-                old_value: flattenData(cell.getOldValue()),
-                row: flattenData(cell.getRow().getData()),
-                index: flattenData(cell.getRow().getPosition())
-        }),
+        cellEdited: (cell) => extract_cell_event(cell, 'cellEdited', true),
         
         /**
          * Handles validation failure events
          * @param {Cell} cell - The Tabulator cell component that failed validation
          * @returns {Object} Formatted data about the validation failure including field, attempted value, and row data
          */
-        validationFailed: (cell) => ({
-                action: 'validationFailed',
-                field: cell.getField(),
-                value: flattenData(cell.getValue()),
-                old_value: flattenData(cell.getOldValue()),
-                row: flattenData(cell.getRow().getData()),
-                index: flattenData(cell.getRow().getPosition())
-        }),
+        validationFailed: (cell) => extract_cell_event(cell, 'validationFailed', true),
         
         /**
          * Handles row addition events
