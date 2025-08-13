@@ -6,10 +6,10 @@
 #' custom tabulatoR JavaScript output binding.
 #'
 #' @param expr A reactive expression that returns a `data.frame`.
-#' @param columns An array (i.e., `c(...)`) of column definitions for Tabulator. Each element must
+#' @param columns An array (`c(...)`) or list of column definitions for Tabulator. Each element must
 #'                be a list representing a column config (e.g., `list(field = "name", editable = TRUE)`).
-#'                This ensures JSON serializes correctly as an array, not a named list. See
-#'                <https://tabulator.info/docs/6.3/columns> for full details.
+#'                Any lists are coerced into an unnamed vector to ensure JSON serializes as an array.
+#'                See <https://tabulator.info/docs/6.3/columns> for full details.
 #' @param layout a string defining the overall table layout. https://tabulator.info/docs/6.3/layout#layout
 #' @param autoColumns Logical. If `TRUE`, columns will be auto-generated from the data.
 #'                Set to `FALSE` if you're supplying a custom column definitions.
@@ -55,14 +55,17 @@ renderTabulatoR <- function(
     
     # Use provided columns if any, otherwise handle autoColumns logic
     if (length(columns) > 0) {
-      config$columns <- columns
+        if (all(vapply(columns, function(x) length(x) == 1 && is.list(x[[1]]), logical(1)))) {
+            columns <- lapply(columns, `[[`, 1)
+        }
+        config$columns <- unname(columns)
     } else if (autoColumns) {
-      # Auto-generate columns based on the editable flag
-      config$columns <- unname(lapply(names(data), function(col) {
-        list(title = col, field = col, editor = if(editable) TRUE else NULL)
-      }))
+        # Auto-generate columns based on the editable flag
+        config$columns <- unname(lapply(names(data), function(col) {
+            list(title = col, field = col, editor = if(editable) TRUE else NULL)
+        }))
     } else {
-      config$autoColumns <- TRUE
+        config$autoColumns <- TRUE
     }
     
     config <- c(config, layout=layout, .opts, list(...))
