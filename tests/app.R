@@ -10,6 +10,7 @@ ui <- page_fillable(
     tags$h2("TabulatoR Debug App"),
 
     actionButton('add_row', 'Add a Row'),
+    actionButton('remove_selected', 'Remove Selected'),
     tabulatoROutput('table'),
     shiny::tags$p(),
     verbatimTextOutput("debug_output")
@@ -39,7 +40,7 @@ server <- function(input, output, session) {
                 const div = document.createElement('div');
                 div.style.display = "flex";
                 div.style.gap = "5px"; // Add some space between buttons
-            
+
                 // Delete button
                 const deleteButton = document.createElement('button');
                 deleteButton.className = "btn btn-sm btn-outline-danger";
@@ -51,7 +52,7 @@ server <- function(input, output, session) {
                     console.log("Deleted row:", row.getData());
                 }
                 div.appendChild(deleteButton);
-            
+
                 // Display button
                 const displayButton = document.createElement('button');
                 displayButton.className = "btn btn-sm btn-outline-info";
@@ -63,14 +64,27 @@ server <- function(input, output, session) {
                     Shiny.setInputValue("view_row", flattenData(row.getData()), {priority: 'event'});
                 }
                 div.appendChild(displayButton); // Fixed: appendChild with capital C
-            
+
                 el.appendChild(div);
                 return div;
             }
             )'
         ))
+    ),
+    selectable = 1,
+    movableRows = TRUE,
+    events = list(
+      rowSelectionChanged = js(
+        "function(data, rows){\n            return {action: 'rowSelectionChanged', row: data.length ? flattenData(data[0]) : null, index: data.length ? rows[0].getPosition() : null};\n        }"
+      ),
+      rowMoved = js(
+        "function(row){\n            return {action: 'rowMoved', row: flattenData(row.getData()), index: row.getPosition()};\n        }"
+      )
     )
   )
+
+  # Track selected row index
+  selected_index <- reactiveVal(NULL)
 
   observeEvent(input$add_row, {
     showModal(
@@ -138,6 +152,17 @@ server <- function(input, output, session) {
         z = rbind(x, new_row)
         datum(z)
         showNotification(paste("Added new row with id:", new_row$id))
+
+    # Store selection
+    } else if (edit$action == "rowSelectionChanged") {
+        selected_index(edit$index)
+        if (!is.null(edit$index)) {
+            showNotification(paste("Selected row:", edit$row$id))
+        }
+
+    # Notify on row move
+    } else if (edit$action == "rowMoved") {
+        showNotification(paste("Moved row", edit$row$id, "to position", edit$index))
     }
   })
 
@@ -146,6 +171,14 @@ server <- function(input, output, session) {
     id = input$view_row$id
     car = names[which(datum()$id == id)]
     showNotification(paste("Viewing", car, "with id", id), type="message")
+  })
+
+  observeEvent(input$remove_selected, {
+    idx <- selected_index()
+    if (!is.null(idx)) {
+        tabulatorRemoveRow('table', idx)
+        selected_index(NULL)
+    }
   })
 
   # Show data in console
