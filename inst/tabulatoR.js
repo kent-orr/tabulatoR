@@ -157,29 +157,32 @@ const defaultEventHandlers = {
 
 (function() {
     const tabulatoROutputBinding = new Shiny.OutputBinding();
-    
-    console.log("output binding created");
-    
+
     $.extend(tabulatoROutputBinding, {
         find: function(scope) {
             return $(scope).find(".tabulator-output");
         },
-        
+
         renderValue: function(el, payload) {
-            console.log('payload?');
             if (!payload) return;
-            
+
+            const debug = payload.options?.debug;
+
             // Reuse or initialize table
             if (el._tabulator) {
-                console.log("Updating Tabulator data");
+                if (debug) {
+                    console.log("Updating Tabulator data");
+                }
                 el._tabulator.replaceData(payload.options?.data || []);
                 return;
             }
-            
+
             let options = payload.options || {};
             options = recursivelyUnwrapJS(options);
-            
-            console.log("Initializing Tabulator with options:", options);
+
+            if (options.debug) {
+                console.log("Initializing Tabulator with options:", options);
+            }
             const table = new Tabulator(el, options);
 
             el._tabulator = table;
@@ -195,13 +198,15 @@ const defaultEventHandlers = {
             // Default events if none were provided
             const userEvents = payload.events || {};
             const mergedEvents = { ...defaultEventHandlers, ...userEvents };
-            
+
             Object.keys(mergedEvents).forEach(eventName => {
                 const handler = mergedEvents[eventName];
 
                 table.on(eventName, (...args) => {
-                    console.log(`📥 Tabulator event: ${eventName}`, args);
-                    
+                    if (options.debug) {
+                        console.log(`📥 Tabulator event: ${eventName}`, args);
+                    }
+
                     // Run user-defined or default extractor
                     const payload = typeof handler === "function"
                     ? handler(...args)
@@ -216,28 +221,36 @@ const defaultEventHandlers = {
             // proxy functions
             Shiny.addCustomMessageHandler('tabulator-replace-data', function(message) {
                 if (message.id === el.id) {
-                    console.log('Received tabulator-replace-data message:', message);
+                    if (options.debug) {
+                        console.log('Received tabulator-replace-data message:', message);
+                    }
                     el._tabulator.replaceData(message.data);
                 }
             });
 
             Shiny.addCustomMessageHandler('tabulator-add-data', function(message) {
                 if (message.id === el.id) {
-                    console.log('Received tabulator-add-data message:', message);
+                    if (options.debug) {
+                        console.log('Received tabulator-add-data message:', message);
+                    }
                     el._tabulator.addData(message.data, message.add_to);
                 }
             });
 
             Shiny.addCustomMessageHandler('tabulator-remove-data', function(message) {
                 if (message.id === el.id) {
-                    console.log('Received tabulator-remove-data message:', message);
+                    if (options.debug) {
+                        console.log('Received tabulator-remove-data message:', message);
+                    }
                     el._tabulator.removeData(message.index);
                 }
             });
 
             Shiny.addCustomMessageHandler('tabulator-revert-field', function(message) {
                 if (message.id === el.id) {
-                    console.log('Received tabulator-revert-field message:', message);
+                    if (options.debug) {
+                        console.log('Received tabulator-revert-field message:', message);
+                    }
                     const row = el._tabulator.getRow(message.index);
                     const cell = row.getCell(message.field);
                     cell.restoreOldValue();
