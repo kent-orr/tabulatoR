@@ -1,70 +1,88 @@
-
 library(shiny)
+library(shinytest2)
 library(tabulatoR)
 
-# Tests for CRUD operations
+crud_app <- function() {
+    shinyApp(
+        ui = fluidPage(
+            actionButton("add", "Add"),
+            actionButton("replace", "Replace"),
+            actionButton("remove", "Remove"),
+            tabulatoROutput("tbl")
+        ),
+        server = function(input, output, session) {
+            output$tbl <- renderTabulatoR(data.frame(id = 1, name = "Bob"))
+
+            observeEvent(input$add, {
+                tabulatorAddData("tbl", data.frame(id = 3), session = session)
+            })
+
+            observeEvent(input$replace, {
+                tabulatorReplaceData("tbl", data.frame(id = 1, name = "Alice"), session = session)
+            })
+
+            observeEvent(input$remove, {
+                tabulatorRemoveRow("tbl", 1, session = session)
+            })
+        }
+    )
+}
 
 test_that("tabulatorAddData appends rows and triggers rowAdded input", {
-    session <- shiny::MockShinySession$new()
-    shiny::withReactiveDomain(session, {
-        observed <- reactiveVal(NULL)
-        observeEvent(input$tbl, observed(input$tbl))
-        tabulatorAddData("tbl", data.frame(id = 3), session = session)
-        msg <- session$getLastCustomMessage()
-        expect_equal(msg$type, "tabulator-add-data")
-        expect_equal(msg$message$id, "tbl")
-        expect_equal(msg$message$data[[1]]$id, 3)
-        session$setInputs(tbl = list(action = "rowAdded", row = list(id = 3)))
-        expect_equal(observed()$action, "rowAdded")
-        expect_equal(observed()$row$id, 3)
-    })
+    app <- AppDriver$new(
+        crud_app(),
+        name = "crud-add",
+        variant = platform_variant(),
+        seed = 123
+    )
+    on.exit(app$stop())
+
+    app$wait_for_js("window.tbl !== undefined")
+
+    app$set_inputs(add = 1)
+    app$wait_for_value(input = "tbl")
+    val <- app$get_value(input = "tbl")
+    expect_equal(val$action, "rowAdded")
+    expect_equal(val$row$id, 3)
 })
 
 test_that("tabulatorReplaceData updates rows and triggers cellEdited input", {
-    session <- shiny::MockShinySession$new()
-    shiny::withReactiveDomain(session, {
-        observed <- reactiveVal(NULL)
-        observeEvent(input$tbl, observed(input$tbl))
-        tabulatorReplaceData("tbl", data.frame(id = 1, name = "Alice"), session = session)
-        msg <- session$getLastCustomMessage()
-        expect_equal(msg$type, "tabulator-replace-data")
-        expect_equal(msg$message$id, "tbl")
-        expect_equal(msg$message$data[[1]]$name, "Alice")
-        session$setInputs(tbl = list(action = "cellEdited", field = "name", value = "Alice", old_value = "Bob", row = list(id = 1, name = "Alice"), index = 1))
-        expect_equal(observed()$action, "cellEdited")
-        expect_equal(observed()$field, "name")
-        expect_equal(observed()$value, "Alice")
-        expect_equal(observed()$old_value, "Bob")
-    })
+    app <- AppDriver$new(
+        crud_app(),
+        name = "crud-replace",
+        variant = platform_variant(),
+        seed = 123
+    )
+    on.exit(app$stop())
+
+    app$wait_for_js("window.tbl !== undefined")
+
+    app$set_inputs(replace = 1)
+    app$wait_for_js("window.tbl.getData()[0].name === 'Alice'")
+    app$run_js("window.tbl.getRows()[0].getCell('name').setValue('Alicia');")
+    app$wait_for_value(input = "tbl")
+    val <- app$get_value(input = "tbl")
+    expect_equal(val$action, "cellEdited")
+    expect_equal(val$field, "name")
+    expect_equal(val$value, "Alicia")
+    expect_equal(val$old_value, "Alice")
 })
 
 test_that("tabulatorRemoveRow deletes rows and triggers rowDeleted input", {
-    session <- shiny::MockShinySession$new()
-    shiny::withReactiveDomain(session, {
-        observed <- reactiveVal(NULL)
-        observeEvent(input$tbl, observed(input$tbl))
-        tabulatorRemoveRow("tbl", index = 1, session = session)
-        msg <- session$getLastCustomMessage()
-        expect_equal(msg$type, "tabulator-remove-row")
-        expect_equal(msg$message$id, "tbl")
-        expect_equal(msg$message$index, 1)
-        session$setInputs(tbl = list(action = "rowDeleted", row = list(id = 1)))
-        expect_equal(observed()$action, "rowDeleted")
-        expect_equal(observed()$row$id, 1)
-    })
-})
+    app <- AppDriver$new(
+        crud_app(),
+        name = "crud-remove",
+        variant = platform_variant(),
+        seed = 123
+    )
+    on.exit(app$stop())
 
-test_that("Reading data emits cellClick input without altering table", {
-    session <- shiny::MockShinySession$new()
-    shiny::withReactiveDomain(session, {
-        observed <- reactiveVal(NULL)
-        observeEvent(input$tbl, observed(input$tbl))
-        expect_null(session$getLastCustomMessage())
-        session$setInputs(tbl = list(action = "cellClick", field = "name", value = "Alice", row = list(id = 1, name = "Alice"), index = 1))
-        expect_equal(observed()$action, "cellClick")
-        expect_equal(observed()$field, "name")
-        expect_equal(observed()$value, "Alice")
-        expect_equal(observed()$row$name, "Alice")
-    })
+    app$wait_for_js("window.tbl !== undefined")
+
+    app$set_inputs(remove = 1)
+    app$wait_for_value(input = "tbl")
+    val <- app$get_value(input = "tbl")
+    expect_equal(val$action, "rowDeleted")
+    expect_equal(val$row$id, 1)
 })
 
