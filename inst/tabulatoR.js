@@ -208,9 +208,9 @@ const defaultEventHandlers = {
                     const payload = typeof handler === "function"
                     ? handler(...args)
                     : { [eventName]: { args } };
-                    
+
                     // Explicitly set only the latest event (no merge!)
-                    Shiny.setInputValue(el.id, payload, { priority: "event" });
+                    Shiny.setInputValue(el.id, flattenData(payload), { priority: "event" });
                 });
             });
 

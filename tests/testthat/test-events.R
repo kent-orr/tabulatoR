@@ -1,5 +1,6 @@
 library(tabulatoR)
 library(shiny)
+library(shinytest2)
 
 test_that("default event handlers are defined", {
     js_file <- system.file("tabulatoR.js", package = "tabulatoR")
@@ -33,4 +34,20 @@ test_that("user event handlers override defaults in binding", {
     js_lines <- readLines(js_file)
     merge_line <- js_lines[grep("const mergedEvents", js_lines)]
     expect_true(grepl("...defaultEventHandlers, ...userEvents", merge_line, fixed = TRUE))
+})
+
+test_that("custom event handlers are flattened automatically", {
+    app <- AppDriver$new(
+        app_dir = test_path("..", "custom-handler-app"),
+        name = "custom-handler",
+        variant = platform_variant(),
+        seed = 123
+    )
+    on.exit(app$stop())
+
+    app$wait_for_js("window.tbl !== undefined")
+    app$run_js("window.tbl.getRows()[0].getCell('a')._cell.click();")
+    app$wait_for_value(input = "tbl")
+    val <- app$get_value(input = "tbl")
+    expect_equal(val$nested, 1)
 })
