@@ -55,7 +55,7 @@ renderTabulatoR <- function(
     
     # Use provided columns if any, otherwise handle autoColumns logic
     if (length(columns) > 0) {
-        if (all(vapply(columns, function(x) length(x) == 1 && is.list(x[[1]]), logical(1)))) {
+        while (all(vapply(columns, function(x) length(x) == 1 && is.list(x[[1]]), logical(1)))) {
             columns <- lapply(columns, `[[`, 1)
         }
         config$columns <- unname(columns)
