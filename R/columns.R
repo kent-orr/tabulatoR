@@ -126,7 +126,7 @@ ActionColumn <- function(label, action, icon = NULL, class = 'btn btn-primary', 
     Column(
         title = label,
         field = action,
-        formatter = JS(js_code),
+        formatter = js(js_code),
         ...
     )
 }
