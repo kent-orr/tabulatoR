@@ -54,6 +54,6 @@ Returns a function that outputs a JSON-serializable payload consumed by the
 custom tabulatoR JavaScript output binding.
 }
 \details{
-JavaScript callbacks (such as \code{cellClick} or \code{formatter}) must be wrapped using \code{JS()}
-from the \code{htmlwidgets} package to be interpreted as executable functions in the browser.
+JavaScript callbacks (such as \code{cellClick} or \code{formatter}) must be wrapped using \code{js()}
+from this package to be interpreted as executable functions in the browser.
 }

@@ -23,8 +23,8 @@
 #' @param quoted Logical. Is `expr` already quoted? If not, it will be quoted.
 #'
 #' @details
-#' JavaScript callbacks (such as `cellClick` or `formatter`) must be wrapped using `JS()`
-#' from the `htmlwidgets` package to be interpreted as executable functions in the browser.
+#' JavaScript callbacks (such as `cellClick` or `formatter`) must be wrapped using `js()`
+#' from this package to be interpreted as executable functions in the browser.
 #' 
 #' @return A function that returns a list to be serialized and passed to the Tabulator output binding.
 #' @export

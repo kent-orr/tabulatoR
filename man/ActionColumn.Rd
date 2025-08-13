@@ -28,6 +28,6 @@ in Shiny applications.
 The \code{ActionColumn} function creates a column with a button in each cell. When the button
 is clicked, it triggers a JavaScript action that can interact with Shiny inputs. The action
 is defined by the \code{action} parameter, which is inserted into the JavaScript code.
-JavaScript callbacks must be wrapped using \code{JS()} from the \code{htmlwidgets} package to be
+JavaScript callbacks must be wrapped using \code{js()} from this package to be
 interpreted as executable functions in the browser.
 }
