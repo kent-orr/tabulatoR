@@ -1,0 +1,12 @@
+{
+    "input": {
+        "table": {
+            "action": "rowAdded",
+            "row": {
+                "id": 1000,
+                "mpg": 30,
+                "cyl": 4
+            }
+        }
+    }
+}
