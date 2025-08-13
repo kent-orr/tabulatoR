@@ -1,3 +1,82 @@
+#' Flatten nested column lists into a flat list of column objects
+#'
+#' @param columns A list or vector that may contain nested column definitions
+#' @return A flat list of column objects
+#' @keywords internal
+flatten_columns <- function(columns) {
+    if (length(columns) == 0) {
+        return(structure(list(), names = NULL))
+    }
+    
+    result <- list()
+    
+    for (i in seq_along(columns)) {
+        item <- columns[[i]]
+        
+        # Unwrap single-element lists that contain the actual column definition
+        # This handles Column() function output: list(list(title=..., field=...))
+        while (is.list(item) && length(item) == 1 && is.list(item[[1]])) {
+            item <- item[[1]]
+        }
+        
+        result[[length(result) + 1]] <- item
+    }
+    
+    # Return unnamed list to match c() behavior
+    structure(result, names = NULL)
+}
+
+renderTabulatoR <- function(
+  expr,
+  columns = c(),
+  layout='fitColumns',
+  autoColumns = TRUE,
+  editable=TRUE,
+  events = NULL,
+  ...,
+  .opts = list(),
+  env = parent.frame(),
+  quoted = FALSE) {
+    
+  func <- shiny::exprToFunction(expr, env, quoted)
+  
+  function() {
+    data <- func()
+    if (!is.data.frame(data)) stop("Reactive must return a data.frame")
+    
+    # Convert to list of rows
+    data_list <- unname(split(data, seq(nrow(data))))
+    
+    config <- list(
+      data = data_list
+    )
+    
+    # Use provided columns if any, otherwise handle autoColumns logic
+    if (length(columns) > 0) {
+        config$columns <- flatten_columns(columns)
+    } else if (autoColumns) {
+        # Auto-generate columns based on the editable flag
+        config$columns <- unname(lapply(names(data), function(col) {
+            list(title = col, field = col, editor = if(editable) TRUE else NULL)
+        }))
+    } else {
+        config$autoColumns <- TRUE
+    }
+    
+    config <- c(config, layout=layout, .opts, list(...))
+    
+    payload <- c(
+      list(
+        options = config,
+        events = events
+      )
+    )
+
+    htmlwidgets:::toJSON2(payload, auto_unbox = TRUE)
+
+  }
+}
+
 #' @title Render a Tabulator Table in Shiny
 #'
 #' @description
@@ -55,8 +134,9 @@ renderTabulatoR <- function(
     
     # Use provided columns if any, otherwise handle autoColumns logic
     if (length(columns) > 0) {
-        while (all(vapply(columns, function(x) length(x) == 1 && is.list(x[[1]]), logical(1)))) {
-            columns <- lapply(columns, `[[`, 1)
+        # Flatten nested lists - keep unwrapping until we have a flat list of column objects
+        while (any(vapply(columns, function(x) length(x) == 1 && is.list(x[[1]]), logical(1)))) {
+            columns <- unlist(columns, recursive = FALSE)
         }
         config$columns <- unname(columns)
     } else if (autoColumns) {
