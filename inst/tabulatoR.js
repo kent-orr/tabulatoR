@@ -12,20 +12,20 @@
  * @returns {*} Either the original value or the evaluated JavaScript if it was wrapped in <js> tags
  */
 function parseJSValue(val) {
-  const startTag = '<js>';
-  const endTag = '</js>';
+    const startTag = '<js>';
+    const endTag = '</js>';
 
-  if (typeof val === 'string' && val.startsWith(startTag) && val.endsWith(endTag)) {
-    const body = val.slice(startTag.length, -endTag.length);
-    try {
-      return eval(`(${body})`); // Make it a callable function
-    } catch (e) {
-      console.warn("Failed to evaluate <js> string:", body, e);
-      return null; 
+    if (typeof val === 'string' && val.startsWith(startTag) && val.endsWith(endTag)) {
+        const body = val.slice(startTag.length, -endTag.length);
+        try {
+            return eval(`(${body})`); // Make it a callable function
+        } catch (e) {
+            console.warn("Failed to evaluate <js> string:", body, e);
+            return null; 
+        }
     }
-  }
 
-  return val;
+    return val;
 }
 
 /**
@@ -42,17 +42,17 @@ function parseJSValue(val) {
  * @returns {*} A new object with the same structure but with JavaScript strings evaluated
  */
 function recursivelyUnwrapJS(obj) {
-  if (Array.isArray(obj)) {
-    return obj.map(recursivelyUnwrapJS);
-  } else if (obj !== null && typeof obj === 'object') {
-    const out = {};
-    for (const key in obj) {
-      out[key] = recursivelyUnwrapJS(obj[key]);
+    if (Array.isArray(obj)) {
+        return obj.map(recursivelyUnwrapJS);
+    } else if (obj !== null && typeof obj === 'object') {
+        const out = {};
+        for (const key in obj) {
+            out[key] = recursivelyUnwrapJS(obj[key]);
+        }
+        return out;
+    } else {
+        return parseJSValue(obj);
     }
-    return out;
-  } else {
-    return parseJSValue(obj);
-  }
 }
 
 
@@ -73,16 +73,16 @@ function recursivelyUnwrapJS(obj) {
  * @returns {*} A simplified version of the input data with single-item arrays unwrapped
  */
 function flattenData(data) {
-    if (Array.isArray(data) && data.length === 1) {
-        return flattenData(data[0]); // Unwrap single-item arrays
-    } else if (typeof data === 'object' && data !== null) {
-        const out = {};
-        for (const key in data) {
-            out[key] = flattenData(data[key]); // Recursively flatten each property
+        if (Array.isArray(data) && data.length === 1) {
+                return flattenData(data[0]); // Unwrap single-item arrays
+        } else if (typeof data === 'object' && data !== null) {
+                const out = {};
+                for (const key in data) {
+                        out[key] = flattenData(data[key]); // Recursively flatten each property
+                }
+                return out;
         }
-        return out;
-    }
-    return data; // Return the value as is if it's not an array or object
+        return data; // Return the value as is if it's not an array or object
 }
 
 /**
@@ -92,67 +92,67 @@ function flattenData(data) {
  * that identifies the event type
  */
 const defaultEventHandlers = {
-    /**
-     * Handles cell click events
-     * @param {Event} e - The browser click event
-     * @param {Cell} cell - The Tabulator cell component that was clicked
-     * @returns {Object} Formatted data about the clicked cell including field, value, and row data
-     */
-    cellClick: (e, cell) => ({
-        action: 'cellClick',
-        field: cell.getField(),
-        value: flattenData(cell.getValue()),
-        row: flattenData(cell.getRow().getData()),
-        index: flattenData(cell.getRow().getPosition())
-    }),
-    
-    /**
-     * Handles cell edit events
-     * @param {Cell} cell - The Tabulator cell component that was edited
-     * @returns {Object} Formatted data about the edited cell including field, new value, old value, and row data
-     */
-    cellEdited: (cell) => ({
-        action: 'cellEdited',
-        field: cell.getField(),
-        value: flattenData(cell.getValue()),
-        old_value: flattenData(cell.getOldValue()),
-        row: flattenData(cell.getRow().getData()),
-        index: flattenData(cell.getRow().getPosition())
-    }),
-    
-    /**
-     * Handles validation failure events
-     * @param {Cell} cell - The Tabulator cell component that failed validation
-     * @returns {Object} Formatted data about the validation failure including field, attempted value, and row data
-     */
-    validationFailed: (cell) => ({
-        action: 'validationFailed',
-        field: cell.getField(),
-        value: flattenData(cell.getValue()),
-        old_value: flattenData(cell.getOldValue()),
-        row: flattenData(cell.getRow().getData()),
-        index: flattenData(cell.getRow().getPosition())
-    }),
-    
-    /**
-     * Handles row addition events
-     * @param {Row} row - The Tabulator row component that was added
-     * @returns {Object} Formatted data about the added row
-     */
-    rowAdded: (row) => ({
-        action: 'rowAdded',
-        row: flattenData(row.getData())
-    }),
-    
-    /**
-     * Handles row deletion events
-     * @param {Row} row - The Tabulator row component that was deleted
-     * @returns {Object} Formatted data about the deleted row
-     */
-    rowDeleted: (row) => ({
-        action: 'rowDeleted',
-        row: flattenData(row.getData())
-    })
+        /**
+         * Handles cell click events
+         * @param {Event} e - The browser click event
+         * @param {Cell} cell - The Tabulator cell component that was clicked
+         * @returns {Object} Formatted data about the clicked cell including field, value, and row data
+         */
+        cellClick: (e, cell) => ({
+                action: 'cellClick',
+                field: cell.getField(),
+                value: flattenData(cell.getValue()),
+                row: flattenData(cell.getRow().getData()),
+                index: flattenData(cell.getRow().getPosition())
+        }),
+        
+        /**
+         * Handles cell edit events
+         * @param {Cell} cell - The Tabulator cell component that was edited
+         * @returns {Object} Formatted data about the edited cell including field, new value, old value, and row data
+         */
+        cellEdited: (cell) => ({
+                action: 'cellEdited',
+                field: cell.getField(),
+                value: flattenData(cell.getValue()),
+                old_value: flattenData(cell.getOldValue()),
+                row: flattenData(cell.getRow().getData()),
+                index: flattenData(cell.getRow().getPosition())
+        }),
+        
+        /**
+         * Handles validation failure events
+         * @param {Cell} cell - The Tabulator cell component that failed validation
+         * @returns {Object} Formatted data about the validation failure including field, attempted value, and row data
+         */
+        validationFailed: (cell) => ({
+                action: 'validationFailed',
+                field: cell.getField(),
+                value: flattenData(cell.getValue()),
+                old_value: flattenData(cell.getOldValue()),
+                row: flattenData(cell.getRow().getData()),
+                index: flattenData(cell.getRow().getPosition())
+        }),
+        
+        /**
+         * Handles row addition events
+         * @param {Row} row - The Tabulator row component that was added
+         * @returns {Object} Formatted data about the added row
+         */
+        rowAdded: (row) => ({
+                action: 'rowAdded',
+                row: flattenData(row.getData())
+        }),
+        
+        /**
+         * Handles row deletion events
+         * @param {Row} row - The Tabulator row component that was deleted
+         * @returns {Object} Formatted data about the deleted row
+         */
+        rowDeleted: (row) => ({
+                action: 'rowDeleted',
+                row: flattenData(row.getData())
+        })
 };
 
 (function() {
