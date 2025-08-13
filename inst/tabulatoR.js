@@ -191,10 +191,7 @@ const defaultEventHandlers = {
             window[el.id] = table;
             
             // Attach event listeners to Tabulator events
-            const inputId = el.id;
-            
-            const eventCache = {};
-            
+
             // Default events if none were provided
             const userEvents = payload.events || {};
             const mergedEvents = { ...defaultEventHandlers, ...userEvents };
