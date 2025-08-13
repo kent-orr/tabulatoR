@@ -35,9 +35,11 @@ Column(
 
 \item{resizable}{Logical. Whether the user can resize this column.}
 
-\item{editable}{Logical. If \code{TRUE}, the cells are editable.}
+\item{editable}{Logical. If \code{TRUE}, the cells are editable. When \code{TRUE}
+and \code{editor} is \code{NULL}, Tabulator guesses the editor (\code{editor = TRUE}).}
 
-\item{editor}{Editor type (\code{"input"}, \code{"number"}, etc.) or JS function via \code{js()}.}
+\item{editor}{Editor type (\code{"input"}, \code{"number"}, etc.) or JS function via
+\code{js()}. Supplying this parameter implicitly enables editing.}
 
 \item{editorParams}{A list of parameters passed to the editor.}
 
@@ -67,4 +69,6 @@ API via \code{...} or \code{.opts}.
 For the full list of column options, see the \href{https://tabulator.info/docs/6.3/columns#definition}{Tabulator documentation}.
 JavaScript callbacks (such as \code{cellClick} or \code{formatter}) must be wrapped using \code{js()}
 from this package to be interpreted as executable functions in the browser.
+Supplying \code{editor} implicitly enables editing. If \code{editable = TRUE} and no
+\code{editor} is provided, Tabulator attempts to guess the editor (\code{editor = TRUE}).
 }
