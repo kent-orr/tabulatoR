@@ -10,6 +10,9 @@
 #' For the full list of column options, see the [Tabulator documentation](https://tabulator.info/docs/6.3/columns#definition).
 #' JavaScript callbacks (such as `cellClick` or `formatter`) must be wrapped using `js()`
 #' from this package to be interpreted as executable functions in the browser.
+#' If an `editor` is supplied without explicitly setting `editable`, the column will be
+#' marked editable. Conversely, specifying `editable = TRUE` without an `editor` allows
+#' Tabulator to auto-select a suitable editor.
 #'
 #' @param title The column title to display in the table header.
 #' @param field The field name in the data corresponding to this column.
@@ -17,8 +20,10 @@
 #' @param hozAlign Horizontal text alignment for cells (`"left"`, `"center"`, `"right"`).
 #' @param width A fixed column width (e.g., "150px" or "20%").
 #' @param resizable Logical. Whether the user can resize this column.
-#' @param editable Logical. If `TRUE`, the cells are editable.
+#' @param editable Logical. If `TRUE`, the cells are editable. Omit to automatically
+#' set `editable = TRUE` when an `editor` is provided.
 #' @param editor Editor type (`"input"`, `"number"`, etc.) or JS function via `js()`.
+#' If `editable = TRUE` and no editor is supplied, Tabulator will auto-select one.
 #' @param editorParams A list of parameters passed to the editor.
 #' @param formatter Formatter name or JS function (use `js()`).
 #' @param formatterParams A list of parameters passed to the formatter.
@@ -47,6 +52,17 @@ Column <- function(
     ...,
     .opts = list()
 ) {
+    editable_missing <- missing(editable)
+    editor_missing <- missing(editor)
+
+    if (!editor_missing && editable_missing) {
+        editable <- TRUE
+    }
+
+    if (isTRUE(editable) && editor_missing) {
+        editor <- TRUE
+    }
+
     args <- list(
         title = title,
         field = field,
