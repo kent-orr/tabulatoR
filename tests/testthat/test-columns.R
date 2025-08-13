@@ -26,7 +26,7 @@ test_that("ActionColumn supports icons", {
   expected <- Column(
     title = "Edit",
     field = "edit",
-    formatter = htmlwidgets::JS(js_code)
+    formatter = js(js_code)
   )
   expect_equal(ActionColumn("Edit", "edit", icon = shiny::icon("edit")), expected)
 })
