@@ -24,8 +24,9 @@ preview_static <- function() {
 #' Preview a Tabulator table with basic CRUD
 #'
 #' Launches a Shiny application demonstrating create, read, update and delete
-#' operations on a Tabulator table. A `verbatimTextOutput` displays the Shiny
-#' inputs emitted by the table when rows are edited or clicked.
+#' operations on a Tabulator table. Rows can be edited directly and removed via
+#' an action column containing delete buttons. A `verbatimTextOutput` displays the
+#' Shiny inputs emitted by the table when rows are edited or actions are triggered.
 #'
 #' The app is shown in Shiny's showcase mode so the underlying code is visible.
 #'
@@ -55,7 +56,12 @@ preview_crud <- function() {
 
         output$crud_table <- renderTabulatoR(
             data(),
-            events = c("cellEdited", "rowClick"),
+            columns = c(
+                ActionColumn("Delete", "delete_row", class = "btn btn-danger btn-sm"),
+                lapply(colnames(mtcars), function(col) Column(title = col, field = col, editable = TRUE))
+            ),
+            events = "cellEdited",
+            autoColumns = FALSE,
             editable = TRUE
         )
 
@@ -65,8 +71,8 @@ preview_crud <- function() {
             tabulatorAddData("crud_table", new_row, add_to = "bottom")
         })
 
-        shiny::observeEvent(input$crud_table$rowClick$index, {
-            idx <- input$crud_table$rowClick$index
+        shiny::observeEvent(input$crud_table$delete_row$position, {
+            idx <- input$crud_table$delete_row$position
             tabulatorRemoveRow("crud_table", idx)
         })
 
