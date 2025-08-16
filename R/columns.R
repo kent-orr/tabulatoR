@@ -109,7 +109,8 @@ Column <- function(
 ActionColumn <- function(label, action, icon = NULL, class = 'btn btn-primary', ...) {
     icon_html <- if (!is.null(icon)) as.character(icon) else ''
     label_html <- htmltools::htmlEscape(label)
-    content_html <- paste0(icon_html, label_html)
+    content_html <- if (!is.null(icon)) paste(icon_html, label_html) else label_html
+    content_html <- trimws(content_html)
 
     class_js <- jsonlite::toJSON(class, auto_unbox = TRUE)
     content_js <- jsonlite::toJSON(content_html, auto_unbox = TRUE)
