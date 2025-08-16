@@ -58,7 +58,13 @@ preview_crud <- function() {
             data(),
             columns = c(
                 ActionColumn("Delete", "delete_row", class = "btn btn-danger btn-sm"),
-                lapply(colnames(mtcars), function(col) Column(title = col, field = col, editable = TRUE))
+                unlist(
+                    lapply(
+                        colnames(mtcars),
+                        function(col) Column(title = col, field = col, editable = TRUE)
+                    ),
+                    recursive = FALSE
+                )
             ),
             events = "cellEdited",
             autoColumns = FALSE,
