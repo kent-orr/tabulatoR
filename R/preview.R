@@ -24,11 +24,12 @@ preview_static <- function() {
 #' Preview a Tabulator table with basic CRUD
 #'
 #' Launches a Shiny application demonstrating create, read, update and delete
-#' operations on a Tabulator table. Rows can be edited directly and removed via
-#' an action column containing delete buttons. A `verbatimTextOutput` displays the
-#' Shiny inputs emitted by the table when rows are edited or actions are triggered.
+#' operations on a Tabulator table. Rows can be edited directly in the table,
+#' and users can add rows via a button. A `verbatimTextOutput` displays the
+#' Shiny input events emitted by the table when rows are edited.
 #'
-#' The app is shown in Shiny's showcase mode so the underlying code is visible.
+#' This example demonstrates the recommended pattern for handling Tabulator events:
+#' use a single `observeEvent(input$table, {...})` and branch based on the `action` field.
 #'
 #' @return A `shiny.appobj` object.
 #' @examples
@@ -38,6 +39,7 @@ preview_static <- function() {
 #' @export
 preview_crud <- function() {
     ui <- shiny::fluidPage(
+        shiny::titlePanel("TabulatoR CRUD Demo"),
         shiny::actionButton("add_row", "Add Row"),
         shiny::fluidRow(
             shiny::column(
@@ -46,6 +48,7 @@ preview_crud <- function() {
             ),
             shiny::column(
                 width = 4,
+                shiny::h4("Latest Event:"),
                 shiny::verbatimTextOutput("crud_inputs")
             )
         )
@@ -56,36 +59,42 @@ preview_crud <- function() {
 
         output$crud_table <- renderTabulatoR(
             data(),
-            columns = c(
-                ActionColumn("Delete", "delete_row", class = "btn btn-danger btn-sm"),
-                unlist(
-                    lapply(
-                        colnames(mtcars),
-                        function(col) Column(title = col, field = col, editable = TRUE)
-                    ),
-                    recursive = FALSE
-                )
-            ),
-            events = "cellEdited",
             autoColumns = FALSE,
-            editable = TRUE
+            editable = TRUE,
+            columns = lapply(colnames(mtcars), function(col) {
+                Column(title = col, field = col, editor = "input")
+            })
         )
 
+        # Handle table events with a single observer
+        shiny::observeEvent(input$crud_table, {
+            event <- input$crud_table
+
+            if (event$action == "cellEdited") {
+                # Update the data when a cell is edited
+                current_data <- data()
+                current_data[event$index, event$field] <- event$value
+                data(current_data)
+            }
+
+            if (event$action == "rowAdded") {
+                # Update the data when a row is added
+                data(rbind(data(), event$row))
+            }
+        })
+
+        # Add a new row when button is clicked
         shiny::observeEvent(input$add_row, {
             new_row <- data()[1, , drop = FALSE]
             new_row[] <- NA
             tabulatorAddData("crud_table", new_row, add_to = "bottom")
         })
 
-        shiny::observeEvent(input$crud_table$delete_row$position, {
-            idx <- input$crud_table$delete_row$position
-            tabulatorRemoveRow("crud_table", idx)
-        })
-
+        # Display the latest event
         output$crud_inputs <- shiny::renderPrint({
             input$crud_table
         })
     }
 
-    shiny::shinyApp(ui, server, options = list(display.mode = "showcase"))
+    shiny::shinyApp(ui, server)
 }
