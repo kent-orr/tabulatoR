@@ -87,7 +87,7 @@ preview_crud <- function() {
         shiny::observeEvent(input$add_row, {
             new_row <- data()[1, , drop = FALSE]
             new_row[] <- NA
-            tabulatorAddData("crud_table", new_row, add_to = "bottom")
+            tabulatorAddRow("crud_table", new_row, add_to = "bottom")
         })
 
         # Display the latest event

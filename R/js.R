@@ -1,7 +1,6 @@
 #' tag javascript for rendering in tabulatoR
-#' 
-#' @param x a string that should be converted to a js function or symbol for use int he tabulator configs, etc.
-#' @export
+#'
+#' @param x a string that should be converted to a js function or symbol for use in the tabulator configs, etc.
 #' @export
 js <- function(x) {
   structure(

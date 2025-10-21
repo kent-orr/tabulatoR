@@ -20,10 +20,10 @@ renderTabulatoR(
 \arguments{
 \item{expr}{A reactive expression that returns a \code{data.frame}.}
 
-\item{columns}{An array (i.e., \code{c(...)}) of column definitions for Tabulator. Each element must
+\item{columns}{An array (\code{c(...)}) or list of column definitions for Tabulator. Each element must
 be a list representing a column config (e.g., \code{list(field = "name", editable = TRUE)}).
-This ensures JSON serializes correctly as an array, not a named list. See
-\url{https://tabulator.info/docs/6.3/columns} for full details.}
+Any lists are coerced into an unnamed vector to ensure JSON serializes as an array.
+See \url{https://tabulator.info/docs/6.3/columns} for full details.}
 
 \item{layout}{a string defining the overall table layout. https://tabulator.info/docs/6.3/layout#layout}
 

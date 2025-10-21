@@ -66,12 +66,12 @@ server <- function(input, output, session) {
   observeEvent(input$add_row, {
     new_row <- data()[1, , drop = FALSE]
     new_row[] <- NA
-    tabulatorAddData("crud_table", new_row, add_to = "bottom")
+    tabulatorAddRow("crud_table", new_row, add_to = "bottom")
   })
 
   # Delete the first row when button is clicked
   observeEvent(input$delete_first_row, {
-    tabulatorRemoveData("crud_table", 1)
+    tabulatorRemoveRow("crud_table", 1)
   })
 
   # Display the latest event

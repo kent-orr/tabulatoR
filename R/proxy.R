@@ -1,13 +1,13 @@
-#' Add data to a Tabulator table
+#' Add row(s) to a Tabulator table
 #'
 #' @description
 #' Programmatically adds one or more rows to an existing Tabulator table in a Shiny app.
-#' This function sends a message to the JavaScript binding to add data to the table
-#' without re-rendering the entire widget.
+#' This function sends a message to the JavaScript binding to add rows to the table
+#' without re-rendering the entire widget or modifying the underlying R data.
 #'
 #' @param outputId The output ID of the Tabulator table (string).
 #' @param data A data.frame or list representing the row(s) to add.
-#' @param add_to Where to add the data: `"top"` or `"bottom"`. Default is `"bottom"`.
+#' @param add_to Where to add the row(s): `"top"` or `"bottom"`. Default is `"bottom"`.
 #' @param session The Shiny session object. Defaults to `shiny::getDefaultReactiveDomain()`.
 #'
 #' @details
@@ -19,14 +19,14 @@
 #' # In a Shiny server function:
 #' observeEvent(input$add_row_btn, {
 #'   new_row <- data.frame(name = "New Person", age = 25)
-#'   tabulatorAddData("my_table", new_row, add_to = "top")
+#'   tabulatorAddRow("my_table", new_row, add_to = "top")
 #' })
 #' }
 #'
 #' @export
-tabulatorAddData <- function(outputId, data, add_to = "bottom", session = shiny::getDefaultReactiveDomain()) {
+tabulatorAddRow <- function(outputId, data, add_to = "bottom", session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session)) {
-    stop("tabulatorAddData must be called from within a Shiny server function")
+    stop("tabulatorAddRow must be called from within a Shiny server function")
   }
 
   # Convert data.frame to list of rows
@@ -46,12 +46,13 @@ tabulatorAddData <- function(outputId, data, add_to = "bottom", session = shiny:
 }
 
 
-#' Remove data from a Tabulator table
+#' Remove row(s) from a Tabulator table
 #'
 #' @description
 #' Programmatically removes row(s) from an existing Tabulator table in a Shiny app
 #' by their index position(s). This function sends a message to the JavaScript binding
-#' to remove data from the table without re-rendering the entire widget.
+#' to remove rows from the table without re-rendering the entire widget or modifying
+#' the underlying R data.
 #'
 #' @param outputId The output ID of the Tabulator table (string).
 #' @param index A numeric vector of row indices to remove (1-based indexing).
@@ -65,14 +66,14 @@ tabulatorAddData <- function(outputId, data, add_to = "bottom", session = shiny:
 #' \dontrun{
 #' # In a Shiny server function:
 #' observeEvent(input$delete_row_btn, {
-#'   tabulatorRemoveData("my_table", index = 1)  # Remove first row
+#'   tabulatorRemoveRow("my_table", index = 1)  # Remove first row
 #' })
 #' }
 #'
 #' @export
-tabulatorRemoveData <- function(outputId, index, session = shiny::getDefaultReactiveDomain()) {
+tabulatorRemoveRow <- function(outputId, index, session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session)) {
-    stop("tabulatorRemoveData must be called from within a Shiny server function")
+    stop("tabulatorRemoveRow must be called from within a Shiny server function")
   }
 
   session$sendCustomMessage("tabulator-remove-data", list(

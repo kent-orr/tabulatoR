@@ -107,13 +107,13 @@ server <- function(input, output, session) {
     for (col in names(y)) {
         y[[col]] <- NA
     }
-    
+
     y$id = max(datum()$id) + 1
     y$mpg = input$new_row_mpg
     y$cyl = input$new_row_cyl
-    
+
     row.names(y) <- input$new_row_name
-    tabulatorAddData('table', y)
+    tabulatorAddRow('table', y)
     removeModal()
   })
 
