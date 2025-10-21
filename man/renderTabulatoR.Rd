@@ -23,16 +23,18 @@ renderTabulatoR(
 \item{columns}{An array (\code{c(...)}) or list of column definitions for Tabulator. Each element must
 be a list representing a column config (e.g., \code{list(field = "name", editable = TRUE)}).
 Any lists are coerced into an unnamed vector to ensure JSON serializes as an array.
-See \url{https://tabulator.info/docs/6.3/columns} for full details.}
+See \url{https://tabulator.info/docs/6.3/columns} for all column options.}
 
-\item{layout}{a string defining the overall table layout. https://tabulator.info/docs/6.3/layout#layout}
+\item{layout}{A string defining the overall table layout.
+See \url{https://tabulator.info/docs/6.3/layout}}
 
 \item{autoColumns}{Logical. If \code{TRUE}, columns will be auto-generated from the data.
-Set to \code{FALSE} if you're supplying a custom column definitions.}
+Set to \code{FALSE} if you're supplying custom column definitions.}
 
-\item{editable}{Logical. If \code{TRUE}, the cells can be editable. Pair with editor=<editgor_type> when not using autocolumns.}
+\item{editable}{Logical. If \code{TRUE}, the cells can be editable. Pair with \code{editor} parameter in columns.}
 
-\item{events}{A named list of JS events that should be sent back to Shiny as input values.}
+\item{events}{A named list of JS events that should be sent back to Shiny as input values.
+See \url{https://tabulator.info/docs/6.3/events} for all available events.}
 
 \item{...}{Additional named elements to include in the payload passed to the front-end.}
 
@@ -43,7 +45,9 @@ Elements in \code{...} will override matching keys in \code{.opts}.}
 
 \item{quoted}{Logical. Is \code{expr} already quoted? If not, it will be quoted.}
 
-\item{options}{A named list of additional Tabulator options (e.g. pagination, layout).}
+\item{options}{A named list of additional Tabulator options (e.g. pagination, sorting, filtering).
+All Tabulator configuration options are supported.
+See \url{https://tabulator.info/docs/6.3/options}}
 }
 \value{
 A function that returns a list to be serialized and passed to the Tabulator output binding.
@@ -52,8 +56,14 @@ A function that returns a list to be serialized and passed to the Tabulator outp
 Creates a reactive Tabulator table widget for use in Shiny applications.
 Returns a function that outputs a JSON-serializable payload consumed by the
 custom tabulatoR JavaScript output binding.
+
+This is a thin wrapper around Tabulator. For complete documentation of all available
+options and features, see the official Tabulator documentation:
+\url{https://tabulator.info/docs/6.3}
 }
 \details{
 JavaScript callbacks (such as \code{cellClick} or \code{formatter}) must be wrapped using \code{js()}
 from this package to be interpreted as executable functions in the browser.
+
+For spreadsheet functionality, see \code{\link[=renderSpreadsheet]{renderSpreadsheet()}}.
 }
