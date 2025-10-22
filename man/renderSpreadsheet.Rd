@@ -6,8 +6,6 @@
 \usage{
 renderSpreadsheet(
   expr,
-  rows = 50,
-  columns = 50,
   editable = TRUE,
   columnDefinition = NULL,
   selectableRange = FALSE,
@@ -21,20 +19,12 @@ renderSpreadsheet(
 )
 }
 \arguments{
-\item{expr}{A reactive expression that returns a \code{data.frame}, \code{matrix}, or list of lists.}
-
-\item{rows}{Number of rows to display in the spreadsheet (default: 50). The spreadsheet
-will automatically expand if data exceeds this value.
-See \url{https://tabulator.info/docs/6.3/spreadsheet#rows}}
-
-\item{columns}{Number of columns to display in the spreadsheet (default: 50).
-The spreadsheet will automatically expand if data exceeds this value.
-See \url{https://tabulator.info/docs/6.3/spreadsheet#columns}}
+\item{expr}{A reactive expression that returns a \code{data.frame} or \code{matrix}.}
 
 \item{editable}{Logical. If \code{TRUE} (default), cells can be edited.}
 
 \item{columnDefinition}{A list defining default properties for all columns.
-For example, \code{list(editor = "input")} makes all cells editable.
+For example, \code{list(editor = "input", validator = "numeric")}.
 See \url{https://tabulator.info/docs/6.3/columns} for all column options.}
 
 \item{selectableRange}{Logical. If \code{TRUE}, enables range selection with mouse/keyboard.
@@ -68,9 +58,10 @@ Creates a reactive Tabulator spreadsheet widget for use in Shiny applications.
 Spreadsheet mode provides an Excel-like interface with grid-based editing,
 arrow key navigation, and clipboard support.
 
-Unlike standard Tabulator tables, spreadsheets use an array-of-arrays data format
-and provide a more traditional spreadsheet experience. This function automatically
-converts data.frames and matrices to the appropriate format.
+This function uses column definitions to provide real column headers from your
+data.frame or matrix column names, rather than generic A, B, C labels. Data is
+stored as objects (named lists) which allows for field-based access and simpler
+CRUD operations.
 
 This is a thin wrapper around Tabulator's spreadsheet mode. For complete documentation
 of all available options and features, see the official Tabulator documentation:
@@ -79,8 +70,8 @@ of all available options and features, see the official Tabulator documentation:
 \details{
 Spreadsheet mode differs from standard table mode in several ways:
 \itemize{
-\item Data is stored as an array-of-arrays rather than objects
-\item Cells are referenced by row/column index rather than field names
+\item Column headers display actual data.frame/matrix column names
+\item Data is stored as objects with field names for easier access
 \item \strong{Double-click} a cell to enter edit mode (or press Enter)
 \item Use \strong{arrow keys} to navigate between cells
 \item Press \strong{Tab} to move to the next cell
@@ -106,8 +97,8 @@ if (interactive()) {
   server <- function(input, output, session) {
     output$sheet <- renderSpreadsheet(
       head(mtcars),
-      rows = 20,
-      columns = 12
+      editable = TRUE,
+      selectableRange = TRUE
     )
   }
 

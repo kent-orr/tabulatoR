@@ -211,10 +211,10 @@ const defaultEventHandlers = {
                 if (el._tabulator.options?.debug) {
                     console.log('Received spreadsheet-set-data message:', message);
                 }
-                if (el._tabulator.setData) {
-                    el._tabulator.setData(message.data);
+                if (el._tabulator.setSheetData) {
+                    el._tabulator.setSheetData(message.data);
                 } else {
-                    console.warn('setData not available - spreadsheet mode may not be enabled');
+                    console.warn('setSheetData not available - spreadsheet mode may not be enabled');
                 }
             }
         });
@@ -239,12 +239,12 @@ const defaultEventHandlers = {
                 if (el._tabulator.options?.debug) {
                     console.log('Received spreadsheet-get-data message:', message);
                 }
-                if (el._tabulator.getData) {
-                    const data = el._tabulator.getData();
+                if (el._tabulator.getSheetData) {
+                    const data = el._tabulator.getSheetData();
                     // Send data back to Shiny as an input value
                     Shiny.setInputValue(el.id + '_data', flattenData(data), { priority: 'event' });
                 } else {
-                    console.warn('getData not available - spreadsheet mode may not be enabled');
+                    console.warn('getSheetData not available - spreadsheet mode may not be enabled');
                 }
             }
         });

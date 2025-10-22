@@ -9,7 +9,7 @@ spreadsheetSetData(outputId, data, session = shiny::getDefaultReactiveDomain())
 \arguments{
 \item{outputId}{The output ID of the Tabulator spreadsheet (string).}
 
-\item{data}{A data.frame, matrix, or list of lists representing the spreadsheet data.}
+\item{data}{A data.frame or matrix representing the spreadsheet data.}
 
 \item{session}{The Shiny session object. Defaults to \code{shiny::getDefaultReactiveDomain()}.}
 }
@@ -18,15 +18,16 @@ Programmatically loads data into an existing Tabulator spreadsheet in a Shiny ap
 This function sends a message to the JavaScript binding to set the spreadsheet data
 without re-rendering the entire widget.
 
-The function automatically converts data.frames and matrices to the array-of-arrays
-format required by Tabulator spreadsheets.
+The function automatically converts data.frames and matrices to the object format
+(list of named lists) used by Tabulator spreadsheets with column definitions.
 
 This function calls Tabulator's \code{setData()} method. For more information, see:
 \url{https://tabulator.info/docs/6.3/data#array}
 }
 \details{
-Unlike standard Tabulator tables, spreadsheets use an array-of-arrays data format
-where each row is a list and data is accessed by position rather than field names.
+This function converts data to object format where each row is a named list with
+field names matching the data.frame column names. This allows data to be accessed
+by field name rather than position.
 }
 \examples{
 \dontrun{

@@ -37,24 +37,19 @@ to_array_of_arrays <- function(data) {
 #' Spreadsheet mode provides an Excel-like interface with grid-based editing,
 #' arrow key navigation, and clipboard support.
 #'
-#' Unlike standard Tabulator tables, spreadsheets use an array-of-arrays data format
-#' and provide a more traditional spreadsheet experience. This function automatically
-#' converts data.frames and matrices to the appropriate format.
+#' This function uses column definitions to provide real column headers from your
+#' data.frame or matrix column names, rather than generic A, B, C labels. Data is
+#' stored as objects (named lists) which allows for field-based access and simpler
+#' CRUD operations.
 #'
 #' This is a thin wrapper around Tabulator's spreadsheet mode. For complete documentation
 #' of all available options and features, see the official Tabulator documentation:
 #' \url{https://tabulator.info/docs/6.3/spreadsheet}
 #'
-#' @param expr A reactive expression that returns a `data.frame`, `matrix`, or list of lists.
-#' @param rows Number of rows to display in the spreadsheet (default: 50). The spreadsheet
-#'             will automatically expand if data exceeds this value.
-#'             See \url{https://tabulator.info/docs/6.3/spreadsheet#rows}
-#' @param columns Number of columns to display in the spreadsheet (default: 50).
-#'                The spreadsheet will automatically expand if data exceeds this value.
-#'                See \url{https://tabulator.info/docs/6.3/spreadsheet#columns}
+#' @param expr A reactive expression that returns a `data.frame` or `matrix`.
 #' @param editable Logical. If `TRUE` (default), cells can be edited.
 #' @param columnDefinition A list defining default properties for all columns.
-#'                         For example, `list(editor = "input")` makes all cells editable.
+#'                         For example, `list(editor = "input", validator = "numeric")`.
 #'                         See \url{https://tabulator.info/docs/6.3/columns} for all column options.
 #' @param selectableRange Logical. If `TRUE`, enables range selection with mouse/keyboard.
 #'                        See \url{https://tabulator.info/docs/6.3/select#range}
@@ -74,8 +69,8 @@ to_array_of_arrays <- function(data) {
 #'
 #' @details
 #' Spreadsheet mode differs from standard table mode in several ways:
-#' - Data is stored as an array-of-arrays rather than objects
-#' - Cells are referenced by row/column index rather than field names
+#' - Column headers display actual data.frame/matrix column names
+#' - Data is stored as objects with field names for easier access
 #' - **Double-click** a cell to enter edit mode (or press Enter)
 #' - Use **arrow keys** to navigate between cells
 #' - Press **Tab** to move to the next cell
@@ -102,8 +97,8 @@ to_array_of_arrays <- function(data) {
 #'   server <- function(input, output, session) {
 #'     output$sheet <- renderSpreadsheet(
 #'       head(mtcars),
-#'       rows = 20,
-#'       columns = 12
+#'       editable = TRUE,
+#'       selectableRange = TRUE
 #'     )
 #'   }
 #'
@@ -111,8 +106,6 @@ to_array_of_arrays <- function(data) {
 #' }
 renderSpreadsheet <- function(
     expr,
-    rows = 50,
-    columns = 50,
     editable = TRUE,
     columnDefinition = NULL,
     selectableRange = FALSE,
@@ -129,15 +122,49 @@ renderSpreadsheet <- function(
     function() {
         data <- func()
 
-        # Convert to array-of-arrays format
-        data_array <- to_array_of_arrays(data)
+        # Ensure we have a data.frame for column-based approach
+        if (!is.data.frame(data)) {
+            if (is.matrix(data)) {
+                data <- as.data.frame(data)
+            } else {
+                stop("renderSpreadsheet requires a data.frame or matrix")
+            }
+        }
 
-        # Build spreadsheet configuration
+        # Generate column definitions from data.frame column names
+        # This gives us real column headers instead of A, B, C
+        columns <- lapply(seq_along(names(data)), function(i) {
+            col_name <- names(data)[i]
+            col_def <- list(
+                title = col_name,
+                field = col_name
+            )
+
+            # Add editor if editable
+            if (editable) {
+                if (!is.null(columnDefinition)) {
+                    # Use user-provided column definition
+                    col_def <- c(col_def, columnDefinition)
+                } else {
+                    # Default to input editor
+                    col_def$editor <- "input"
+                }
+            }
+
+            col_def
+        })
+
+        # Convert to object format (list of named lists)
+        # Each row becomes a named list with field names
+        data_list <- lapply(seq_len(nrow(data)), function(i) {
+            as.list(data[i, , drop = FALSE])
+        })
+
+        # Build spreadsheet configuration with columns
         config <- list(
             spreadsheet = TRUE,
-            spreadsheetRows = rows,
-            spreadsheetColumns = columns,
-            spreadsheetData = data_array,
+            columns = columns,
+            data = data_list,
             # Set edit trigger to double-click for smoother navigation
             # This allows single-click to select and arrow keys to navigate
             # without accidentally entering edit mode
@@ -145,14 +172,6 @@ renderSpreadsheet <- function(
             # Set empty cells to undefined to keep exports clean
             editorEmptyValue = NA
         )
-
-        # Add column definition if provided
-        if (!is.null(columnDefinition)) {
-            config$spreadsheetColumnDefinition <- columnDefinition
-        } else if (editable) {
-            # Default to editable cells if editable=TRUE
-            config$spreadsheetColumnDefinition <- list(editor = "input")
-        }
 
         # Add range selection if requested
         if (selectableRange) {

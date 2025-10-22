@@ -172,19 +172,20 @@ tabulatorRevertField <- function(outputId, index, field, session = shiny::getDef
 #' This function sends a message to the JavaScript binding to set the spreadsheet data
 #' without re-rendering the entire widget.
 #'
-#' The function automatically converts data.frames and matrices to the array-of-arrays
-#' format required by Tabulator spreadsheets.
+#' The function automatically converts data.frames and matrices to the object format
+#' (list of named lists) used by Tabulator spreadsheets with column definitions.
 #'
 #' This function calls Tabulator's `setData()` method. For more information, see:
 #' \url{https://tabulator.info/docs/6.3/data#array}
 #'
 #' @param outputId The output ID of the Tabulator spreadsheet (string).
-#' @param data A data.frame, matrix, or list of lists representing the spreadsheet data.
+#' @param data A data.frame or matrix representing the spreadsheet data.
 #' @param session The Shiny session object. Defaults to `shiny::getDefaultReactiveDomain()`.
 #'
 #' @details
-#' Unlike standard Tabulator tables, spreadsheets use an array-of-arrays data format
-#' where each row is a list and data is accessed by position rather than field names.
+#' This function converts data to object format where each row is a named list with
+#' field names matching the data.frame column names. This allows data to be accessed
+#' by field name rather than position.
 #'
 #' @examples
 #' \dontrun{
@@ -205,12 +206,23 @@ spreadsheetSetData <- function(outputId, data, session = shiny::getDefaultReacti
     stop("spreadsheetSetData must be called from within a Shiny server function")
   }
 
-  # Convert to array-of-arrays format
-  data_array <- to_array_of_arrays(data)
+  # Ensure we have a data.frame
+  if (!is.data.frame(data)) {
+    if (is.matrix(data)) {
+      data <- as.data.frame(data)
+    } else {
+      stop("spreadsheetSetData requires a data.frame or matrix")
+    }
+  }
+
+  # Convert to object format (list of named lists)
+  data_list <- lapply(seq_len(nrow(data)), function(i) {
+    as.list(data[i, , drop = FALSE])
+  })
 
   session$sendCustomMessage("spreadsheet-set-data", list(
     id = session$ns(outputId),
-    data = data_array
+    data = data_list
   ))
 }
 
@@ -267,7 +279,8 @@ spreadsheetClearSheet <- function(outputId, session = shiny::getDefaultReactiveD
 #'
 #' @details
 #' After calling this function, the spreadsheet data will be available in
-#' `input$<outputId>_data` as a list of lists (array-of-arrays format).
+#' `input$<outputId>_data` as a list of named lists (object format), where each
+#' list element contains the field names and values for one row.
 #'
 #' @examples
 #' \dontrun{
@@ -280,7 +293,9 @@ spreadsheetClearSheet <- function(outputId, session = shiny::getDefaultReactiveD
 #' observe({
 #'   data <- input$my_spreadsheet_data
 #'   if (!is.null(data)) {
-#'     print(data)
+#'     # Convert to data.frame if needed
+#'     df <- do.call(rbind.data.frame, data)
+#'     print(df)
 #'   }
 #' })
 #' }

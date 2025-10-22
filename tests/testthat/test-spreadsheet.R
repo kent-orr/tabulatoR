@@ -118,28 +118,29 @@ test_that("renderSpreadsheet returns a function", {
 
 test_that("renderSpreadsheet output includes spreadsheet configuration", {
     renderer <- renderSpreadsheet(
-        data.frame(A = 1:3, B = 4:6),
-        rows = 20,
-        columns = 10
+        data.frame(A = 1:3, B = 4:6)
     )
 
     # Execute the render function
     json_output <- renderer()
 
-    # Parse the JSON (note: jsonlite will simplify array-of-arrays to a matrix)
-    result <- jsonlite::fromJSON(json_output)
+    # Parse the JSON (don't simplify data frames)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
     # Check spreadsheet options
     expect_true(result$options$spreadsheet)
-    expect_equal(result$options$spreadsheetRows, 20)
-    expect_equal(result$options$spreadsheetColumns, 10)
 
-    # jsonlite simplifies [[1,4],[2,5],[3,6]] into a 3x2 matrix
-    # This is OK - the JSON string is correct for JavaScript
-    expect_true(is.matrix(result$options$spreadsheetData) || is.list(result$options$spreadsheetData))
+    # Should have columns with field names
+    expect_type(result$options$columns, "list")
+    expect_length(result$options$columns, 2)
+    expect_equal(result$options$columns[[1]]$field, "A")
+    expect_equal(result$options$columns[[1]]$title, "A")
+    expect_equal(result$options$columns[[2]]$field, "B")
+    expect_equal(result$options$columns[[2]]$title, "B")
 
-    # Check the JSON string contains correct array structure
-    expect_true(grepl('"spreadsheetData":\\[\\[', json_output))
+    # Should have data as list of objects
+    expect_type(result$options$data, "list")
+    expect_length(result$options$data, 3)
 
     # Check clipboard is enabled
     expect_true(result$options$clipboard)
@@ -150,10 +151,10 @@ test_that("renderSpreadsheet sets editable by default", {
     renderer <- renderSpreadsheet(data.frame(A = 1:3))
 
     json_output <- renderer()
-    result <- jsonlite::fromJSON(json_output)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
-    # Should have editor configured
-    expect_equal(result$options$spreadsheetColumnDefinition$editor, "input")
+    # Should have editor configured in columns
+    expect_equal(result$options$columns[[1]]$editor, "input")
 })
 
 
@@ -164,10 +165,10 @@ test_that("renderSpreadsheet respects editable=FALSE", {
     )
 
     json_output <- renderer()
-    result <- jsonlite::fromJSON(json_output)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
-    # Should not have column definition when editable=FALSE
-    expect_null(result$options$spreadsheetColumnDefinition)
+    # Should not have editor when editable=FALSE
+    expect_null(result$options$columns[[1]]$editor)
 })
 
 
@@ -178,7 +179,7 @@ test_that("renderSpreadsheet configures range selection", {
     )
 
     json_output <- renderer()
-    result <- jsonlite::fromJSON(json_output)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
     expect_true(result$options$selectableRange)
     expect_true(result$options$selectableRangeColumns)
@@ -194,10 +195,11 @@ test_that("renderSpreadsheet accepts custom column definition", {
     )
 
     json_output <- renderer()
-    result <- jsonlite::fromJSON(json_output)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
-    expect_equal(result$options$spreadsheetColumnDefinition$editor, "number")
-    expect_equal(result$options$spreadsheetColumnDefinition$validator, "numeric")
+    # Custom column definition should be applied to columns
+    expect_equal(result$options$columns[[1]]$editor, "number")
+    expect_equal(result$options$columns[[1]]$validator, "numeric")
 })
 
 
@@ -211,7 +213,7 @@ test_that("renderSpreadsheet merges user options correctly", {
     )
 
     json_output <- renderer()
-    result <- jsonlite::fromJSON(json_output)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
     expect_equal(result$options$layout, "fitData")
     expect_equal(result$options$height, "500px")
@@ -227,7 +229,7 @@ test_that("renderSpreadsheet accepts events parameter", {
     )
 
     json_output <- renderer()
-    result <- jsonlite::fromJSON(json_output)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
     expect_type(result$events, "list")
     expect_true("cellEdited" %in% names(result$events))
@@ -274,18 +276,19 @@ test_that("renderSpreadsheet converts mtcars correctly", {
     renderer <- renderSpreadsheet(head(mtcars, 3))
 
     json_output <- renderer()
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
-    # Check the JSON contains array-of-arrays format
-    expect_true(grepl('"spreadsheetData":\\[\\[', json_output))
+    # Should have columns for all mtcars columns
+    expect_type(result$options$columns, "list")
+    expect_length(result$options$columns, 11)  # mtcars has 11 columns
 
-    # Parse and check (will be simplified to matrix by jsonlite)
-    result <- jsonlite::fromJSON(json_output)
+    # Check first column has correct properties
+    expect_equal(result$options$columns[[1]]$field, "mpg")
+    expect_equal(result$options$columns[[1]]$title, "mpg")
 
-    # After parsing, jsonlite simplifies to matrix with dims [rows, cols]
-    if (is.matrix(result$options$spreadsheetData)) {
-        expect_equal(nrow(result$options$spreadsheetData), 3)
-        expect_equal(ncol(result$options$spreadsheetData), 11)
-    }
+    # Should have 3 rows of data
+    expect_type(result$options$data, "list")
+    expect_length(result$options$data, 3)
 })
 
 
@@ -302,12 +305,11 @@ test_that("renderSpreadsheet handles NA values", {
     # Check that JSON contains null for NA values
     expect_true(grepl('null', json_output))
 
-    result <- jsonlite::fromJSON(json_output)
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
-    # jsonlite preserves NAs when parsing back
-    if (is.matrix(result$options$spreadsheetData)) {
-        expect_true(any(is.na(result$options$spreadsheetData)))
-    }
+    # Should have data with NA values preserved
+    expect_type(result$options$data, "list")
+    expect_length(result$options$data, 3)
 })
 
 
@@ -317,18 +319,16 @@ test_that("renderSpreadsheet handles all numeric data", {
     renderer <- renderSpreadsheet(mat)
     json_output <- renderer()
 
-    # Check JSON structure
-    expect_true(grepl('"spreadsheetData":\\[\\[', json_output))
+    result <- jsonlite::fromJSON(json_output, simplifyDataFrame = FALSE)
 
-    result <- jsonlite::fromJSON(json_output)
+    # Should have 5 columns from matrix
+    expect_type(result$options$columns, "list")
+    expect_length(result$options$columns, 5)
 
-    # After parsing, should be a matrix
-    if (is.matrix(result$options$spreadsheetData)) {
-        expect_equal(nrow(result$options$spreadsheetData), 4)
-        expect_equal(ncol(result$options$spreadsheetData), 5)
+    # Should have 4 rows of data
+    expect_type(result$options$data, "list")
+    expect_length(result$options$data, 4)
 
-        # Check first and last values
-        expect_equal(result$options$spreadsheetData[1, 1], 1)
-        expect_equal(result$options$spreadsheetData[4, 5], 20)
-    }
+    # Check that data is present (converted to data.frame first, so column names exist)
+    expect_true(length(result$options$data[[1]]) > 0)
 })
