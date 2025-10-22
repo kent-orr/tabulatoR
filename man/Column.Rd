@@ -35,7 +35,7 @@ Column(
 
 \item{resizable}{Logical. Whether the user can resize this column.}
 
-\item{editable}{Logical. If \code{TRUE}, the cells are editable. When \code{TRUE}
+\item{editable}{Logical. If \code{TRUE}, the cells are editable. When set to \code{TRUE}
 and \code{editor} is \code{NULL}, Tabulator guesses the editor (\code{editor = TRUE}).}
 
 \item{editor}{Editor type (\code{"input"}, \code{"number"}, etc.) or JS function via

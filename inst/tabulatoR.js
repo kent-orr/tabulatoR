@@ -153,12 +153,111 @@ const defaultEventHandlers = {
 (function() {
     const tabulatoROutputBinding = new Shiny.OutputBinding();
 
+    // Register custom message handlers once, globally
+    // These handlers will look up the correct element by ID when called
+    let handlersRegistered = false;
+
+    function registerMessageHandlers() {
+        if (handlersRegistered) return;
+        handlersRegistered = true;
+
+        // Proxy functions for standard tables
+        Shiny.addCustomMessageHandler('tabulator-replace-data', function(message) {
+            const el = document.getElementById(message.id);
+            if (el && el._tabulator) {
+                if (el._tabulator.options?.debug) {
+                    console.log('Received tabulator-replace-data message:', message);
+                }
+                el._tabulator.replaceData(message.data);
+            }
+        });
+
+        Shiny.addCustomMessageHandler('tabulator-add-data', function(message) {
+            const el = document.getElementById(message.id);
+            if (el && el._tabulator) {
+                if (el._tabulator.options?.debug) {
+                    console.log('Received tabulator-add-data message:', message);
+                }
+                el._tabulator.addData(message.data, message.add_to);
+            }
+        });
+
+        Shiny.addCustomMessageHandler('tabulator-remove-data', function(message) {
+            const el = document.getElementById(message.id);
+            if (el && el._tabulator) {
+                if (el._tabulator.options?.debug) {
+                    console.log('Received tabulator-remove-data message:', message);
+                }
+                el._tabulator.removeData(message.index);
+            }
+        });
+
+        Shiny.addCustomMessageHandler('tabulator-revert-field', function(message) {
+            const el = document.getElementById(message.id);
+            if (el && el._tabulator) {
+                if (el._tabulator.options?.debug) {
+                    console.log('Received tabulator-revert-field message:', message);
+                }
+                const row = el._tabulator.getRow(message.index);
+                const cell = row.getCell(message.field);
+                cell.restoreOldValue();
+            }
+        });
+
+        // Spreadsheet-specific message handlers
+        Shiny.addCustomMessageHandler('spreadsheet-set-data', function(message) {
+            const el = document.getElementById(message.id);
+            if (el && el._tabulator) {
+                if (el._tabulator.options?.debug) {
+                    console.log('Received spreadsheet-set-data message:', message);
+                }
+                if (el._tabulator.setSheetData) {
+                    el._tabulator.setSheetData(message.data);
+                } else {
+                    console.warn('setSheetData not available - spreadsheet mode may not be enabled');
+                }
+            }
+        });
+
+        Shiny.addCustomMessageHandler('spreadsheet-clear-sheet', function(message) {
+            const el = document.getElementById(message.id);
+            if (el && el._tabulator) {
+                if (el._tabulator.options?.debug) {
+                    console.log('Received spreadsheet-clear-sheet message:', message);
+                }
+                if (el._tabulator.clearSheet) {
+                    el._tabulator.clearSheet();
+                } else {
+                    console.warn('clearSheet not available - spreadsheet mode may not be enabled');
+                }
+            }
+        });
+
+        Shiny.addCustomMessageHandler('spreadsheet-get-data', function(message) {
+            const el = document.getElementById(message.id);
+            if (el && el._tabulator) {
+                if (el._tabulator.options?.debug) {
+                    console.log('Received spreadsheet-get-data message:', message);
+                }
+                if (el._tabulator.getSheetData) {
+                    const data = el._tabulator.getSheetData();
+                    // Send data back to Shiny as an input value
+                    Shiny.setInputValue(el.id + '_data', flattenData(data), { priority: 'event' });
+                } else {
+                    console.warn('getSheetData not available - spreadsheet mode may not be enabled');
+                }
+            }
+        });
+    }
+
     $.extend(tabulatoROutputBinding, {
         find: function(scope) {
             return $(scope).find(".tabulator-output");
         },
 
         renderValue: function(el, payload) {
+            // Register handlers on first call
+            registerMessageHandlers();
             if (!payload) return;
 
             const debug = payload.options?.debug;
@@ -208,47 +307,6 @@ const defaultEventHandlers = {
                     Shiny.setInputValue(el.id, flattenData(payload), { priority: "event" });
                 });
             });
-
-
-            // proxy functions
-            Shiny.addCustomMessageHandler('tabulator-replace-data', function(message) {
-                if (message.id === el.id) {
-                    if (options.debug) {
-                        console.log('Received tabulator-replace-data message:', message);
-                    }
-                    el._tabulator.replaceData(message.data);
-                }
-            });
-
-            Shiny.addCustomMessageHandler('tabulator-add-data', function(message) {
-                if (message.id === el.id) {
-                    if (options.debug) {
-                        console.log('Received tabulator-add-data message:', message);
-                    }
-                    el._tabulator.addData(message.data, message.add_to);
-                }
-            });
-
-            Shiny.addCustomMessageHandler('tabulator-remove-data', function(message) {
-                if (message.id === el.id) {
-                    if (options.debug) {
-                        console.log('Received tabulator-remove-data message:', message);
-                    }
-                    el._tabulator.removeData(message.index);
-                }
-            });
-
-            Shiny.addCustomMessageHandler('tabulator-revert-field', function(message) {
-                if (message.id === el.id) {
-                    if (options.debug) {
-                        console.log('Received tabulator-revert-field message:', message);
-                    }
-                    const row = el._tabulator.getRow(message.index);
-                    const cell = row.getCell(message.field);
-                    cell.restoreOldValue();
-                }
-            });
-            
         }
     });
     

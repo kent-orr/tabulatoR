@@ -7,7 +7,7 @@
 js(x)
 }
 \arguments{
-\item{x}{a string that should be converted to a js function or symbol for use int he tabulator configs, etc.}
+\item{x}{a string that should be converted to a js function or symbol for use in the tabulator configs, etc.}
 }
 \description{
 tag javascript for rendering in tabulatoR
