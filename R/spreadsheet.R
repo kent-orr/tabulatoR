@@ -193,7 +193,7 @@ renderSpreadsheet <- function(
             events = events
         )
 
-        jsonlite::toJSON(payload, auto_unbox = TRUE)
+        jsonlite::toJSON(payload, auto_unbox = TRUE, null = "null")
     }
 }
 

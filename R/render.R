@@ -105,9 +105,11 @@ renderTabulatoR <- function(
         } else if (autoColumns) {
                 # Auto-generate columns based on the editable flag
                 config$columns <- unname(lapply(names(data), function(col) {
-                        # Use NA (not NULL) for null in JSON when editable=FALSE
-                        # jsonlite converts NULL to {} and NA to null
-                        list(title = col, field = col, editor = if(editable) TRUE else NA)
+                        col_def <- list(title = col, field = col)
+                        if (editable) {
+                                col_def$editor <- TRUE
+                        }
+                        col_def
                 }))
         } else {
                 config$autoColumns <- TRUE
@@ -122,7 +124,7 @@ renderTabulatoR <- function(
             )
         )
 
-        jsonlite::toJSON(payload, auto_unbox = TRUE)
+        jsonlite::toJSON(payload, auto_unbox = TRUE, null = "null")
 
     }
 } 
