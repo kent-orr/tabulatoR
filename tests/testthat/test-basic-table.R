@@ -12,10 +12,10 @@ expect_snapshot_json <- function(x) {
 # These tests verify that tabulatoR generates JSON structures compatible with
 # native Tabulator.js initialization.
 #
-# NOTE: tabulatoR wraps data values in arrays (e.g., {"a": [1]}) on the R side,
-# and the JavaScript code (inst/tabulatoR.js:flattenData) unwraps them before
-# passing to Tabulator. This is a serialization workaround. Tests below verify
-# the R-side JSON structure that gets processed by the JavaScript.
+# NOTE: tabulatoR uses jsonlite::toJSON() with auto_unbox=TRUE to serialize data,
+# producing clean JSON without unnecessary array wrapping (e.g., {"a": 1} not {"a": [1]}).
+# This matches native Tabulator.js expectations and eliminates the need for client-side
+# unwrapping that was previously required with htmlwidgets:::toJSON2().
 
 test_that("tabulatoR JSON payload structure matches Tabulator expectations", {
   session <- MockShinySession$new()
@@ -38,7 +38,7 @@ test_that("tabulatoR JSON payload structure matches Tabulator expectations", {
     #   autoColumns: true
     # })
     #
-    # tabulatoR sends wrapped values that JS flattenData() unwraps
+    # tabulatoR now generates this exact format directly
 
     # Verify JSON contains key elements
     expect_type(json, "character")
@@ -208,16 +208,16 @@ test_that("tabulatoR preserves data types through JSON serialization", {
     renderer <- renderTabulatoR(rv())
     json <- isolate(renderer())
 
-    # Values are wrapped in arrays but types are preserved
-    # Numbers should not be quoted (JSON numbers even in arrays)
-    expect_match(json, ':\\s*\\[1\\]')  # integer wrapped
-    expect_match(json, ':\\s*\\[1\\.5\\]')  # double wrapped
+    # Values are NOT wrapped in arrays, types are preserved as JSON primitives
+    # Numbers should not be quoted
+    expect_match(json, ':\\s*1[,}]')  # integer unwrapped
+    expect_match(json, ':\\s*1\\.5')  # double unwrapped
 
     # Strings should be quoted
     expect_match(json, '"text"')
 
-    # Booleans should not be quoted (even in arrays)
-    expect_match(json, ':\\s*\\[true\\]')  # boolean wrapped
+    # Booleans should not be quoted
+    expect_match(json, ':\\s*true')  # boolean unwrapped
   })
 })
 
