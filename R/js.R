@@ -5,6 +5,6 @@
 js <- function(x) {
   structure(
     paste0("<js>", x, "</js>"),
-    class = "tabulatoR_js"
+    class = c("tabulatoR_js", "json")  # Add "json" class so jsonlite treats as pre-formatted JSON string
   )
 }

@@ -7,46 +7,22 @@
           "options": {
               "data": [
                   {
-                      "id": [
-                          1
-                      ],
-                      "name": [
-                          "Alice"
-                      ],
-                      "price": [
-                          50
-                      ],
-                      "status": [
-                          "active"
-                      ]
+                      "id": 1,
+                      "name": "Alice",
+                      "price": 50,
+                      "status": "active"
                   },
                   {
-                      "id": [
-                          2
-                      ],
-                      "name": [
-                          "Bob"
-                      ],
-                      "price": [
-                          150
-                      ],
-                      "status": [
-                          "inactive"
-                      ]
+                      "id": 2,
+                      "name": "Bob",
+                      "price": 150,
+                      "status": "inactive"
                   },
                   {
-                      "id": [
-                          3
-                      ],
-                      "name": [
-                          "Charlie"
-                      ],
-                      "price": [
-                          75
-                      ],
-                      "status": [
-                          "active"
-                      ]
+                      "id": 3,
+                      "name": "Charlie",
+                      "price": 75,
+                      "status": "active"
                   }
               ],
               "columns": [
