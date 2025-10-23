@@ -7,15 +7,9 @@
           "options": {
               "data": [
                   {
-                      "id": [
-                          1
-                      ],
-                      "name": [
-                          "Alice"
-                      ],
-                      "age": [
-                          25
-                      ]
+                      "id": 1,
+                      "name": "Alice",
+                      "age": 25
                   }
               ],
               "columns": [
@@ -42,7 +36,9 @@
               ],
               "layout": "fitColumns"
           },
-          "events": null
+          "events": {
+      
+          }
       }
        
 
@@ -55,38 +51,18 @@
           "options": {
               "data": [
                   {
-                      "id": [
-                          1
-                      ],
-                      "name": [
-                          "Alice"
-                      ],
-                      "age": [
-                          25
-                      ],
-                      "status": [
-                          "active"
-                      ],
-                      "notes": [
-                          "Note 1"
-                      ]
+                      "id": 1,
+                      "name": "Alice",
+                      "age": 25,
+                      "status": "active",
+                      "notes": "Note 1"
                   },
                   {
-                      "id": [
-                          2
-                      ],
-                      "name": [
-                          "Bob"
-                      ],
-                      "age": [
-                          30
-                      ],
-                      "status": [
-                          "inactive"
-                      ],
-                      "notes": [
-                          "Note 2"
-                      ]
+                      "id": 2,
+                      "name": "Bob",
+                      "age": 30,
+                      "status": "inactive",
+                      "notes": "Note 2"
                   }
               ],
               "columns": [
@@ -135,7 +111,9 @@
               ],
               "layout": "fitColumns"
           },
-          "events": null
+          "events": {
+      
+          }
       }
        
 

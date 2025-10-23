@@ -85,9 +85,11 @@ renderTabulatoR <- function(
     function() {
         data <- func()
         if (!is.data.frame(data)) stop("Reactive must return a data.frame")
-        
-        # Convert to list of rows
-        data_list <- unname(split(data, seq(nrow(data))))
+
+        # Convert to list of rows (as proper lists, not data.frames)
+        data_list <- lapply(seq_len(nrow(data)), function(i) {
+            as.list(data[i, ])
+        })
         
         config <- list(
             data = data_list
@@ -103,7 +105,11 @@ renderTabulatoR <- function(
         } else if (autoColumns) {
                 # Auto-generate columns based on the editable flag
                 config$columns <- unname(lapply(names(data), function(col) {
-                        list(title = col, field = col, editor = if(editable) TRUE else NULL)
+                        col_def <- list(title = col, field = col)
+                        if (editable) {
+                                col_def$editor <- TRUE
+                        }
+                        col_def
                 }))
         } else {
                 config$autoColumns <- TRUE
@@ -118,7 +124,7 @@ renderTabulatoR <- function(
             )
         )
 
-        htmlwidgets:::toJSON2(payload, auto_unbox = TRUE)
+        jsonlite::toJSON(payload, auto_unbox = TRUE, null = "null")
 
     }
 } 

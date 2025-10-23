@@ -7,37 +7,19 @@
           "options": {
               "data": [
                   {
-                      "id": [
-                          1
-                      ],
-                      "name": [
-                          "Alice"
-                      ],
-                      "age": [
-                          25
-                      ]
+                      "id": 1,
+                      "name": "Alice",
+                      "age": 25
                   },
                   {
-                      "id": [
-                          2
-                      ],
-                      "name": [
-                          "Bob"
-                      ],
-                      "age": [
-                          30
-                      ]
+                      "id": 2,
+                      "name": "Bob",
+                      "age": 30
                   },
                   {
-                      "id": [
-                          3
-                      ],
-                      "name": [
-                          "Charlie"
-                      ],
-                      "age": [
-                          35
-                      ]
+                      "id": 3,
+                      "name": "Charlie",
+                      "age": 35
                   }
               ],
               "columns": [
@@ -67,7 +49,9 @@
               ],
               "layout": "fitColumns"
           },
-          "events": null
+          "events": {
+      
+          }
       }
        
 
@@ -79,16 +63,12 @@
       {
           "options": {
               "data": [
-                  {
-                      "a": [
-                          1
-                      ]
-                  },
-                  {
-                      "a": [
-                          2
-                      ]
-                  }
+                  [
+                      1
+                  ],
+                  [
+                      2
+                  ]
               ],
               "columns": [
                   {
@@ -99,7 +79,9 @@
               ],
               "layout": "fitColumns"
           },
-          "events": null
+          "events": {
+      
+          }
       }
        
 
