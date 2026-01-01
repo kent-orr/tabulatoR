@@ -73,9 +73,57 @@
 </h2>
 <p>tabulatoR provides a lightweight R interface to the powerful <a href="http://tabulator.info/" class="external-link">Tabulator</a> JavaScript library. Unlike
 traditional htmlwidgets-based packages, tabulatoR uses a custom Shiny
-output binding with direct JSON serialization via <code>jsonlite</code>,
-giving you clean, predictable output and full access to Tabulator’s
-extensive API.</p>
+output binding with direct JSON serialization, giving you clean,
+predictable output and full access to Tabulator’s extensive API.</p>
+<div class="section level3">
+<h3 id="why-tabulator-works-well-with-r">Why Tabulator Works Well with R<a class="anchor" aria-label="anchor" href="#why-tabulator-works-well-with-r"></a>
+</h3>
+<p>Tabulator is a JavaScript library that uses a standard JSON object to
+render interactive tables. Since the Tabulator specification is
+essentially a named list (JSON object), it makes Tabulator an ideal
+candidate for an R wrapper. R’s data structures serialize cleanly to the
+exact format Tabulator expects, requiring minimal transformation.</p>
+<p>Here’s an example from the <a href="http://tabulator.info/docs/5.5/quickstart" class="external-link">Tabulator
+documentation</a> showing a typical table configuration:</p>
+<p><strong>Tabulator JSON specification:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="dt">"data"</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"Alice"</span><span class="fu">,</span> <span class="dt">"age"</span><span class="fu">:</span> <span class="dv">30</span><span class="fu">,</span> <span class="dt">"city"</span><span class="fu">:</span> <span class="st">"NYC"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"Bob"</span><span class="fu">,</span> <span class="dt">"age"</span><span class="fu">:</span> <span class="dv">25</span><span class="fu">,</span> <span class="dt">"city"</span><span class="fu">:</span> <span class="st">"LA"</span><span class="fu">}</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="dt">"columns"</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"title"</span><span class="fu">:</span> <span class="st">"Name"</span><span class="fu">,</span> <span class="dt">"field"</span><span class="fu">:</span> <span class="st">"name"</span><span class="fu">,</span> <span class="dt">"sorter"</span><span class="fu">:</span> <span class="st">"string"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"title"</span><span class="fu">:</span> <span class="st">"Age"</span><span class="fu">,</span> <span class="dt">"field"</span><span class="fu">:</span> <span class="st">"age"</span><span class="fu">,</span> <span class="dt">"editor"</span><span class="fu">:</span> <span class="st">"number"</span><span class="fu">,</span> <span class="dt">"validator"</span><span class="fu">:</span> <span class="st">"min:0"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"title"</span><span class="fu">:</span> <span class="st">"City"</span><span class="fu">,</span> <span class="dt">"field"</span><span class="fu">:</span> <span class="st">"city"</span><span class="fu">,</span> <span class="dt">"editor"</span><span class="fu">:</span> <span class="st">"input"</span><span class="fu">}</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="dt">"layout"</span><span class="fu">:</span> <span class="st">"fitColumns"</span><span class="fu">,</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="dt">"pagination"</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="dt">"paginationSize"</span><span class="fu">:</span> <span class="dv">10</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Equivalent R list() format:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Alice"</span>, age <span class="op">=</span> <span class="fl">30</span>, city <span class="op">=</span> <span class="st">"NYC"</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Bob"</span>, age <span class="op">=</span> <span class="fl">25</span>, city <span class="op">=</span> <span class="st">"LA"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Name"</span>, field <span class="op">=</span> <span class="st">"name"</span>, sorter <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Age"</span>, field <span class="op">=</span> <span class="st">"age"</span>, editor <span class="op">=</span> <span class="st">"number"</span>, validator <span class="op">=</span> <span class="st">"min:0"</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"City"</span>, field <span class="op">=</span> <span class="st">"city"</span>, editor <span class="op">=</span> <span class="st">"input"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"fitColumns"</span>,</span>
+<span>  pagination <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  paginationSize <span class="op">=</span> <span class="fl">10</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Notice the one-to-one correspondence: - JSON objects <code><a href="https://rdrr.io/r/base/Paren.html" class="external-link">{}</a></code>
+→ R named lists <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> - JSON arrays <code>[]</code> → R
+lists <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> - JSON booleans <code>true/false</code> → R
+logicals <code>TRUE/FALSE</code> - JSON strings and numbers remain the
+same</p>
+<p>This natural mapping means tabulatoR can pass R configurations
+directly to Tabulator with minimal overhead.</p>
+</div>
 <div class="section level3">
 <h3 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a>
 </h3>
@@ -105,7 +153,7 @@ tables</li>
 <h3 id="creating-a-table">Creating a Table<a class="anchor" aria-label="anchor" href="#creating-a-table"></a>
 </h3>
 <p>The main function is <code><a href="../reference/renderTabulatoR.html">renderTabulatoR()</a></code>:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.posit.co/" class="external-link">shiny</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://kent-orr.github.io/tabulatoR/">tabulatoR</a></span><span class="op">)</span></span>
 <span></span>
@@ -170,7 +218,7 @@ index</li>
 data and index</li>
 </ul>
 <p><strong>Using default events in R:</strong></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">server</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">input</span>, <span class="va">output</span>, <span class="va">session</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">output</span><span class="op">$</span><span class="va">myTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/renderTabulatoR.html">renderTabulatoR</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
@@ -191,7 +239,7 @@ data and index</li>
 </h4>
 <p>Override defaults or add new events using the <code>events</code>
 parameter with the <code><a href="../reference/js.html">js()</a></code> wrapper:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">output</span><span class="op">$</span><span class="va">myTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/renderTabulatoR.html">renderTabulatoR</a></span><span class="op">(</span></span>
 <span>  <span class="va">mtcars</span>,</span>
 <span>  events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -336,7 +384,7 @@ the UI table directly.</p>
 <div class="section level4">
 <h4 id="adding-rows">Adding Rows<a class="anchor" aria-label="anchor" href="#adding-rows"></a>
 </h4>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">server</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">input</span>, <span class="va">output</span>, <span class="va">session</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">output</span><span class="op">$</span><span class="va">myTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/renderTabulatoR.html">renderTabulatoR</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
@@ -365,21 +413,21 @@ the UI table directly.</p>
 <div class="section level4">
 <h4 id="removing-rows">Removing Rows<a class="anchor" aria-label="anchor" href="#removing-rows"></a>
 </h4>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Remove row at index 5</span></span>
 <span><span class="fu"><a href="../reference/tabulatorRemoveRow.html">tabulatorRemoveRow</a></span><span class="op">(</span><span class="st">"myTable"</span>, index <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="replacing-all-data">Replacing All Data<a class="anchor" aria-label="anchor" href="#replacing-all-data"></a>
 </h4>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Replace entire table with new data</span></span>
 <span><span class="fu"><a href="../reference/tabulatorReplaceData.html">tabulatorReplaceData</a></span><span class="op">(</span><span class="st">"myTable"</span>, <span class="va">new_data_frame</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="reverting-edits">Reverting Edits<a class="anchor" aria-label="anchor" href="#reverting-edits"></a>
 </h4>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/observeEvent.html" class="external-link">observeEvent</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">myTable</span>, <span class="op">{</span></span>
 <span>  <span class="va">edited</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">myTable</span></span>
 <span></span>
@@ -400,7 +448,7 @@ the UI table directly.</p>
 <h4 id="spreadsheet-specific-proxies">Spreadsheet-Specific Proxies<a class="anchor" aria-label="anchor" href="#spreadsheet-specific-proxies"></a>
 </h4>
 <p>For tables created with <code><a href="../reference/renderSpreadsheet.html">renderSpreadsheet()</a></code>:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Replace spreadsheet data</span></span>
 <span><span class="fu"><a href="../reference/spreadsheetSetData.html">spreadsheetSetData</a></span><span class="op">(</span><span class="st">"mySheet"</span>, <span class="va">new_data</span><span class="op">)</span></span>
 <span></span>
@@ -421,7 +469,7 @@ the UI table directly.</p>
 </h3>
 <p>For advanced use cases, you can access the Tabulator instance
 directly from JavaScript:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">output</span><span class="op">$</span><span class="va">myTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/renderTabulatoR.html">renderTabulatoR</a></span><span class="op">(</span></span>
 <span>  <span class="va">mtcars</span>,</span>
 <span>  .opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -434,18 +482,18 @@ directly from JavaScript:</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Or use browser console JavaScript:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co">// Access the table (if table id is "myTable")</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="kw">const</span> table <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="at">myTable</span><span class="op">;</span></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">// Call any Tabulator method</span></span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>table<span class="op">.</span><span class="fu">deselectRow</span>()<span class="op">;</span></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>table<span class="op">.</span><span class="fu">setFilter</span>(<span class="st">"mpg"</span><span class="op">,</span> <span class="st">"&gt;"</span><span class="op">,</span> <span class="dv">20</span>)<span class="op">;</span></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>table<span class="op">.</span><span class="fu">download</span>(<span class="st">"csv"</span><span class="op">,</span> <span class="st">"data.csv"</span>)<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co">// Access the table (if table id is "myTable")</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="kw">const</span> table <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="at">myTable</span><span class="op">;</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">// Call any Tabulator method</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>table<span class="op">.</span><span class="fu">deselectRow</span>()<span class="op">;</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>table<span class="op">.</span><span class="fu">setFilter</span>(<span class="st">"mpg"</span><span class="op">,</span> <span class="st">"&gt;"</span><span class="op">,</span> <span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>table<span class="op">.</span><span class="fu">download</span>(<span class="st">"csv"</span><span class="op">,</span> <span class="st">"data.csv"</span>)<span class="op">;</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="complete-example-editable-table-with-validation">Complete Example: Editable Table with Validation<a class="anchor" aria-label="anchor" href="#complete-example-editable-table-with-validation"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ui</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/fluidPage.html" class="external-link">fluidPage</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/tab_source.html">tab_source</a></span><span class="op">(</span>theme <span class="op">=</span> <span class="st">"tabulator_bootstrap5"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/actionButton.html" class="external-link">actionButton</a></span><span class="op">(</span><span class="st">"addRow"</span>, <span class="st">"Add Row"</span><span class="op">)</span>,</span>

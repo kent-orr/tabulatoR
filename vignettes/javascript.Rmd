@@ -20,7 +20,57 @@ library(tabulatoR)
 
 ## Overview: How tabulatoR Wraps Tabulator.js
 
-tabulatoR provides a lightweight R interface to the powerful [Tabulator](http://tabulator.info/) JavaScript library. Unlike traditional htmlwidgets-based packages, tabulatoR uses a custom Shiny output binding with direct JSON serialization via `jsonlite`, giving you clean, predictable output and full access to Tabulator's extensive API.
+tabulatoR provides a lightweight R interface to the powerful [Tabulator](http://tabulator.info/) JavaScript library. Unlike traditional htmlwidgets-based packages, tabulatoR uses a custom Shiny output binding with direct JSON serialization, giving you clean, predictable output and full access to Tabulator's extensive API.
+
+### Why Tabulator Works Well with R
+
+Tabulator is a JavaScript library that uses a standard JSON object to render interactive tables. Since the Tabulator specification is essentially a named list (JSON object), it makes Tabulator an ideal candidate for an R wrapper. R's data structures serialize cleanly to the exact format Tabulator expects, requiring minimal transformation.
+
+Here's an example from the [Tabulator documentation](http://tabulator.info/docs/5.5/quickstart) showing a typical table configuration:
+
+**Tabulator JSON specification:**
+```json
+{
+  "data": [
+    {"name": "Alice", "age": 30, "city": "NYC"},
+    {"name": "Bob", "age": 25, "city": "LA"}
+  ],
+  "columns": [
+    {"title": "Name", "field": "name", "sorter": "string"},
+    {"title": "Age", "field": "age", "editor": "number", "validator": "min:0"},
+    {"title": "City", "field": "city", "editor": "input"}
+  ],
+  "layout": "fitColumns",
+  "pagination": true,
+  "paginationSize": 10
+}
+```
+
+**Equivalent R list() format:**
+```{r eval=FALSE}
+list(
+  data = list(
+    list(name = "Alice", age = 30, city = "NYC"),
+    list(name = "Bob", age = 25, city = "LA")
+  ),
+  columns = list(
+    list(title = "Name", field = "name", sorter = "string"),
+    list(title = "Age", field = "age", editor = "number", validator = "min:0"),
+    list(title = "City", field = "city", editor = "input")
+  ),
+  layout = "fitColumns",
+  pagination = TRUE,
+  paginationSize = 10
+)
+```
+
+Notice the one-to-one correspondence:
+- JSON objects `{}` → R named lists `list()`
+- JSON arrays `[]` → R lists `list()`
+- JSON booleans `true/false` → R logicals `TRUE/FALSE`
+- JSON strings and numbers remain the same
+
+This natural mapping means tabulatoR can pass R configurations directly to Tabulator with minimal overhead.
 
 ### Architecture
 
