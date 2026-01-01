@@ -1,0 +1,81 @@
+url: https://kent-orr.github.io/tabulatoR/
+template:
+  bootstrap: 5
+
+home:
+  title: "tabulatoR - Tabulator Integration for Shiny"
+  description: >
+    An R package that brings the powerful Tabulator JavaScript library
+    to Shiny applications with a lightweight, extensible wrapper.
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, tutorials]
+    right: [search, github]
+  components:
+    home: ~
+    articles:
+      text: Articles
+      menu:
+      - text: Getting Started
+        href: articles/getting_started.html
+      - text: Column Configuration
+        href: articles/columns.html
+      - text: JavaScript Integration
+        href: articles/javascript.html
+
+reference:
+  - title: "Core Functions"
+    desc: "Main functions for creating Tabulator tables"
+    contents:
+    - renderTabulatoR
+    - tabulatoROutput
+
+  - title: "Column Definition"
+    desc: "Functions for defining and customizing columns"
+    contents:
+    - Column
+    - flatten_columns
+
+  - title: "Table Operations"
+    desc: "Functions for updating tables reactively"
+    contents:
+    - tabulatorAddRow
+    - tabulatorRemoveRow
+    - tabulatorReplaceData
+    - tabulatorRevertField
+
+  - title: "Spreadsheet Mode"
+    desc: "Functions for spreadsheet-like functionality"
+    contents:
+    - renderSpreadsheet
+    - spreadsheetOutput
+    - spreadsheetGetData
+    - spreadsheetSetData
+    - spreadsheetClearSheet
+
+  - title: "Preview Functions"
+    desc: "Functions for previewing tables"
+    contents:
+    - preview_static
+    - preview_crud
+    - preview_spreadsheet
+
+  - title: "JavaScript Utilities"
+    desc: "Helper functions for JavaScript integration"
+    contents:
+    - js
+
+  - title: "Internal Utilities"
+    desc: "Helper functions for data transformation"
+    contents:
+    - tab_source
+    - to_array_of_arrays
+
+authors:
+  Kent Orr:
+    href: https://github.com/kent-orr
+
+development:
+  mode: auto
+  version_label: default

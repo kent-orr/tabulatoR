@@ -1,11 +1,13 @@
 Package: tabulatoR
 Title: Tabulator Integration for Shiny Applications
 Version: 0.0.0.9002
-Authors@R: 
+Authors@R:
     person("Kent", "Orr", , "orr.kent@pawpawanalytics.com", role = c("aut", "cre"))
-Description: Provides an interface for integrating Tabulator tables into Shiny applications. 
+Description: Provides an interface for integrating Tabulator tables into Shiny applications.
     This package allows users to easily create interactive and editable tables with a variety of themes and customization options.
 License: MIT + file LICENSE
+URL: https://kent-orr.github.io/tabulatoR/
+BugReports: https://github.com/kent-orr/tabulatoR/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
@@ -13,7 +15,11 @@ Imports:
     htmltools,
     jsonlite,
     shiny
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
-    shinytest2
+    shinytest2,
+    pkgdown,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
+VignetteBuilder: knitr
