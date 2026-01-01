@@ -1,0 +1,456 @@
+---
+title: "Basic Table Generation with tabulatoR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basic Table Generation with tabulatoR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Introduction
+
+**tabulatoR** brings the powerful [Tabulator JavaScript library](https://tabulator.info/) to Shiny applications, providing interactive and highly customizable data tables. This vignette will guide you through the basics of creating and customizing tables with tabulatoR.
+
+### Key Features
+
+- **Column-first design** – Define individual column behavior and formatting
+- **Direct JavaScript integration** – Unlimited customization via `js()` wrapper
+- **Shiny-ready** – Built for reactive, event-driven applications
+- **Lightweight** – Minimal dependencies (htmltools, jsonlite, shiny)
+
+## Installation
+
+```{r setup}
+library(shiny)
+library(tabulatoR)
+```
+
+## Creating Your First Table
+
+The simplest way to create a table is using `tabulatoROutput()` in your UI and `renderTabulatoR()` in your server function:
+
+```{r basic-table}
+ui <- fluidPage(
+  titlePanel("My First tabulatoR Table"),
+  tabulatoROutput("my_table")
+)
+
+server <- function(input, output, session) {
+  output$my_table <- renderTabulatoR(
+    mtcars
+  )
+}
+
+shinyApp(ui, server)
+```
+
+By default, `renderTabulatoR()` will:
+- Auto-generate columns from your data
+- Make all cells editable
+- Use the 'fitColumns' layout to fill available width
+
+## Working with Reactive Data
+
+tabulatoR works seamlessly with reactive data sources. Simply pass a reactive expression that returns a data frame:
+
+```{r reactive-data}
+server <- function(input, output, session) {
+  # Create a reactive data source
+  table_data <- reactive({
+    head(mtcars, input$num_rows)
+  })
+
+  output$my_table <- renderTabulatoR(
+    table_data()
+  )
+}
+```
+
+## Customizing Columns
+
+The `Column()` helper function provides a convenient way to define custom column configurations. Here's how to customize individual columns:
+
+```{r custom-columns}
+server <- function(input, output, session) {
+  output$my_table <- renderTabulatoR(
+    mtcars,
+    autoColumns = FALSE,  # Disable auto-generation
+    columns = c(
+      Column(title = "Model", field = "model", width = "200"),
+      Column(title = "MPG", field = "mpg", hozAlign = "right"),
+      Column(title = "Cylinders", field = "cyl", hozAlign = "center"),
+      Column(title = "Horsepower", field = "hp", hozAlign = "right"),
+      Column(title = "Weight", field = "wt", hozAlign = "right")
+    )
+  )
+}
+```
+
+### Common Column Options
+
+The `Column()` function accepts many parameters:
+
+- **title**: Display name for the column header
+- **field**: The field name in your data
+- **width**: Column width (e.g., "150", "20%")
+- **hozAlign**: Horizontal alignment ("left", "center", "right")
+- **visible**: Whether column is shown (TRUE/FALSE)
+- **resizable**: Allow user to resize column (TRUE/FALSE)
+- **editable**: Make column editable (TRUE/FALSE)
+- **editor**: Editor type ("input", "number", "textarea", etc.)
+
+## Creating Editable Tables
+
+To create a table where users can edit values:
+
+```{r editable-table}
+ui <- fluidPage(
+  titlePanel("Editable Table"),
+  tabulatoROutput("editable_table"),
+  verbatimTextOutput("event_log")
+)
+
+server <- function(input, output, session) {
+  # Store data in a reactive value
+  data <- reactiveVal(head(mtcars, 5))
+
+  output$editable_table <- renderTabulatoR(
+    data(),
+    editable = TRUE,
+    autoColumns = FALSE,
+    columns = c(
+      Column(title = "MPG", field = "mpg", editor = "number"),
+      Column(title = "Cylinders", field = "cyl", editor = "number"),
+      Column(title = "Displacement", field = "disp", editor = "number"),
+      Column(title = "Horsepower", field = "hp", editor = "number")
+    )
+  )
+
+  # Display the latest event
+  output$event_log <- renderPrint({
+    input$editable_table
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Handling Table Events
+
+When users interact with the table, events are sent back to Shiny via `input$<table_id>`. The event object contains:
+
+- **action**: The type of event (e.g., "cellEdited", "rowAdded")
+- **field**: The column that was modified
+- **index**: The row index (1-based)
+- **value**: The new value
+- **row**: Complete row data (for some events)
+
+Here's how to handle edit events:
+
+```{r event-handling}
+server <- function(input, output, session) {
+  data <- reactiveVal(head(mtcars, 5))
+
+  output$my_table <- renderTabulatoR(
+    data(),
+    editable = TRUE
+  )
+
+  # Handle table events
+  observeEvent(input$my_table, {
+    event <- input$my_table
+
+    if (event$action == "cellEdited") {
+      # Update the data when a cell is edited
+      current_data <- data()
+      current_data[event$index, event$field] <- event$value
+      data(current_data)
+
+      # Optional: show a notification
+      showNotification(
+        paste0("Updated ", event$field, " in row ", event$index),
+        type = "message"
+      )
+    }
+  })
+}
+```
+
+## Adding Rows Dynamically
+
+Use the `tabulatorAddRow()` proxy function to add rows without re-rendering the entire table:
+
+```{r add-rows}
+ui <- fluidPage(
+  titlePanel("Dynamic Row Management"),
+  actionButton("add_row", "Add Row"),
+  tabulatoROutput("crud_table")
+)
+
+server <- function(input, output, session) {
+  data <- reactiveVal(head(mtcars, 3))
+
+  output$crud_table <- renderTabulatoR(
+    data(),
+    editable = TRUE,
+    autoColumns = FALSE,
+    columns = lapply(colnames(mtcars)[1:5], function(col) {
+      Column(title = col, field = col, editor = "input")
+    })
+  )
+
+  # Handle cellEdited event
+  observeEvent(input$crud_table, {
+    event <- input$crud_table
+
+    if (event$action == "cellEdited") {
+      current_data <- data()
+      current_data[event$index, event$field] <- event$value
+      data(current_data)
+    }
+
+    if (event$action == "rowAdded") {
+      # Update reactive data when row is added
+      data(rbind(data(), event$row))
+    }
+  })
+
+  # Add new row when button is clicked
+  observeEvent(input$add_row, {
+    new_row <- data()[1, , drop = FALSE]
+    new_row[] <- NA  # Clear all values
+    tabulatorAddRow("crud_table", new_row, add_to = "bottom")
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Controlling Table Layout
+
+The `layout` parameter controls how columns fill the table width:
+
+```{r layouts}
+# Fit columns to fill width (default)
+output$table1 <- renderTabulatoR(
+  mtcars,
+  layout = "fitColumns"
+)
+
+# Fit data to natural column width
+output$table2 <- renderTabulatoR(
+  mtcars,
+  layout = "fitData"
+)
+
+# Fit data with max width for columns
+output$table3 <- renderTabulatoR(
+  mtcars,
+  layout = "fitDataFill"
+)
+```
+
+## Creating Non-Editable Tables
+
+For read-only tables, set `editable = FALSE`:
+
+```{r non-editable}
+server <- function(input, output, session) {
+  output$static_table <- renderTabulatoR(
+    mtcars,
+    editable = FALSE,
+    autoColumns = FALSE,
+    columns = c(
+      Column(title = "Model", field = "model"),
+      Column(title = "MPG", field = "mpg", hozAlign = "right"),
+      Column(title = "Cylinders", field = "cyl", hozAlign = "center")
+    )
+  )
+}
+```
+
+## Using Column Editors
+
+Different editor types are available for different data types:
+
+```{r column-editors}
+server <- function(input, output, session) {
+  output$my_table <- renderTabulatoR(
+    data.frame(
+      name = c("Alice", "Bob", "Charlie"),
+      age = c(25, 30, 35),
+      active = c(TRUE, FALSE, TRUE),
+      notes = c("", "", ""),
+      stringsAsFactors = FALSE
+    ),
+    autoColumns = FALSE,
+    columns = c(
+      Column(title = "Name", field = "name", editor = "input"),
+      Column(title = "Age", field = "age", editor = "number"),
+      Column(title = "Active", field = "active", editor = "tickCross"),
+      Column(title = "Notes", field = "notes", editor = "textarea")
+    )
+  )
+}
+```
+
+Available editor types include:
+- **input**: Basic text input (default)
+- **number**: Numeric input
+- **textarea**: Multi-line text
+- **tickCross**: Checkbox for boolean values
+- **star**: Star rating
+- **date**: Date picker
+- **time**: Time picker
+
+## Complete Example: Employee Directory
+
+Here's a complete example combining multiple features:
+
+```{r complete-example}
+library(shiny)
+library(tabulatoR)
+
+ui <- fluidPage(
+  titlePanel("Employee Directory"),
+
+  fluidRow(
+    column(
+      width = 8,
+      tabulatoROutput("employees")
+    ),
+    column(
+      width = 4,
+      h4("Add New Employee"),
+      textInput("name", "Name"),
+      numericInput("age", "Age", 30),
+      textInput("department", "Department"),
+      numericInput("salary", "Salary", 50000),
+      actionButton("add_employee", "Add Employee", class = "btn-primary"),
+      hr(),
+      h4("Recent Events"),
+      verbatimTextOutput("events")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  # Initialize employee data
+  employees <- reactiveVal(data.frame(
+    name = c("Alice Johnson", "Bob Smith", "Carol White"),
+    age = c(28, 35, 42),
+    department = c("Engineering", "Sales", "Marketing"),
+    salary = c(75000, 65000, 70000),
+    stringsAsFactors = FALSE
+  ))
+
+  # Render the table
+  output$employees <- renderTabulatoR(
+    employees(),
+    autoColumns = FALSE,
+    editable = TRUE,
+    columns = c(
+      Column(
+        title = "Name",
+        field = "name",
+        editor = "input",
+        width = "150"
+      ),
+      Column(
+        title = "Age",
+        field = "age",
+        editor = "number",
+        hozAlign = "center",
+        width = "80"
+      ),
+      Column(
+        title = "Department",
+        field = "department",
+        editor = "input",
+        width = "120"
+      ),
+      Column(
+        title = "Salary",
+        field = "salary",
+        editor = "number",
+        hozAlign = "right",
+        width = "100"
+      )
+    )
+  )
+
+  # Handle table events
+  observeEvent(input$employees, {
+    event <- input$employees
+
+    if (event$action == "cellEdited") {
+      # Update data when cell is edited
+      current <- employees()
+      current[event$index, event$field] <- event$value
+      employees(current)
+    }
+
+    if (event$action == "rowAdded") {
+      # Update data when row is added
+      employees(rbind(employees(), event$row))
+    }
+  })
+
+  # Add new employee
+  observeEvent(input$add_employee, {
+    req(input$name, input$age, input$department, input$salary)
+
+    new_employee <- data.frame(
+      name = input$name,
+      age = input$age,
+      department = input$department,
+      salary = input$salary,
+      stringsAsFactors = FALSE
+    )
+
+    tabulatorAddRow("employees", new_employee, add_to = "bottom")
+
+    # Clear input fields
+    updateTextInput(session, "name", value = "")
+    updateNumericInput(session, "age", value = 30)
+    updateTextInput(session, "department", value = "")
+    updateNumericInput(session, "salary", value = 50000)
+  })
+
+  # Display events
+  output$events <- renderPrint({
+    input$employees
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Next Steps
+
+This vignette covered the basics of table generation with tabulatoR. To learn more:
+
+- Explore **spreadsheet mode** with `renderSpreadsheet()` for Excel-like functionality
+- Use the `js()` wrapper for **custom formatters** and advanced JavaScript integration
+- Learn about **additional proxy functions** for dynamic table manipulation
+- Check out **additional table options** in the [Tabulator documentation](https://tabulator.info/docs/6.3)
+
+You can also try the built-in preview functions:
+- `preview_static()` - View a simple non-editable table
+- `preview_crud()` - See CRUD operations in action
+- `preview_spreadsheet()` - Explore spreadsheet mode
+
+## Additional Resources
+
+- [Tabulator Official Documentation](https://tabulator.info/docs/6.3)
+- [Tabulator Column Options](https://tabulator.info/docs/6.3/columns)
+- [Tabulator Editors](https://tabulator.info/docs/6.3/edit)
+- [Tabulator Events](https://tabulator.info/docs/6.3/events)

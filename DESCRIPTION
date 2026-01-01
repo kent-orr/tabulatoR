@@ -13,7 +13,10 @@ Imports:
     htmltools,
     jsonlite,
     shiny
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
-    shinytest2
+    shinytest2,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
+VignetteBuilder: knitr
