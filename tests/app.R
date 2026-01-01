@@ -103,16 +103,13 @@ server <- function(input, output, session) {
 
   observeEvent(input$add_row_confirm, {
     x = datum()
-    y = x[1,]
-    for (col in names(y)) {
-        y[[col]] <- NA
-    }
+    # Convert first row to a list to get the structure, then set values to NA
+    y = as.list(x[1,])
+    y = lapply(y, function(v) NA)
 
     y$id = max(datum()$id) + 1
     y$mpg = input$new_row_mpg
     y$cyl = input$new_row_cyl
-
-    row.names(y) <- input$new_row_name
     tabulatorAddRow('table', y)
     removeModal()
   })
@@ -148,6 +145,7 @@ server <- function(input, output, session) {
                 new_row[[col]] <- NA
             }
         }
+        new_row$id <- max(x$id) + 1
         # Add the row to our reactive data
         z = rbind(x, new_row)
         datum(z)
