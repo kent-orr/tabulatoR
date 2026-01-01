@@ -30,13 +30,13 @@ library(shiny)
 library(tabulatoR)
 
 ui <- fluidPage(
-  tabulatorOutput("table")
+  tabulatoROutput("table"),
+  verbatimTextOutput("edits")
 )
 
 server <- function(input, output, session) {
-  output$table <- renderTabulator({
-    tabulator(iris, editable = TRUE)
-  })
+    output$table <- renderTabulatoR(head(cars), editable=TRUE)
+    output$edits <- renderPrint(str(input$table))
 }
 
 shinyApp(ui, server)
