@@ -1,31 +1,57 @@
 # tabulatoR
 
-**tabulatoR** wraps [Tabulator JS](https://tabulator.info/) for Shiny with minimal abstraction.
+tabulatoR makes it easy to add fast, editable tables to Shiny apps with minimal setup.
 
-- **Low barrier**: CRUD operations work out-of-the-box in R
-- **High ceiling**: Direct access to Tabulator JS API for custom behavior
-- **For users who want R convenience + JS power when needed**
+## Who this is for
 
-Whether you need a simple sortable table or complex custom interactions, tabulatoR gives you the flexibility to start simple and go deep when you need to.
+This package can accommodate R and Shiny users who want:
 
-## Key Features
+- An editable table
+- Reasonable defaults
+- No JavaScript required
 
-- **Column-first design** – Define columns with their own behavior, formatting, and interactivity
-- **Direct JavaScript integration** – Use custom JS inline for limitless customization
-- **Shiny-ready** – Built from the ground up for reactive, event-driven apps
-- **Lightweight & flexible** – Only load what you need, without heavy dependencies
+But still has direct access to the powerful Tabulator API for deep customization and functionality like callbacks, server-side messages, and custom formatters when you need it.
+
+## Why tabulatoR instead of DT or reactable
+
+Use tabulatoR when you need:
+
+- In-place cell editing
+- Row additions and deletions
+- Large tables that stay responsive
+- Some serious customization of display, editing, and callback functions
+
 
 ## Quick Start
 
 ```r
 # remotes::install_github("kent-orr/tabulatoR")
-library(shiny); library(tabulatoR)
+library(shiny)
+library(tabulatoR)
 
-shinyApp(
-  ui = fluidPage(tabulatoROutput("table"), verbatimTextOutput("edits")),
-  server = function(input, output) {
-    output$table <- renderTabulatoR(head(cars), editable = TRUE)
-    output$edits <- renderPrint(str(input$table))
-  }
+ui <- fluidPage(
+  tabulatorOutput("table")
 )
+
+server <- function(input, output, session) {
+  output$table <- renderTabulator({
+    tabulator(iris, editable = TRUE)
+  })
+}
+
+shinyApp(ui, server)
 ```
+
+**This creates an editable table.**
+Click a cell to edit it. Changes are available on the server through standard Shiny inputs.
+
+## What you get out of the box
+
+- Editable cells
+- Sorting and filtering
+- Large table performance
+- Works inside standard Shiny reactivity
+
+## Low barrier, high ceiling
+
+Start simple with defaults. When you need more, tabulatoR gives you direct access to the full Tabulator API—no fighting the wrapper. Pass custom column definitions, add JavaScript formatters, or hook into any Tabulator feature without leaving R.
