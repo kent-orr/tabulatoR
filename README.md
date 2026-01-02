@@ -1,36 +1,31 @@
 # tabulatoR
 
-**tabulatoR** is an R package that brings the powerful [Tabulator JavaScript library](https://tabulator.info/) to Shiny applications.  
-It’s a lightweight, extensible wrapper designed for **interactive, highly customizable data tables in R**.
+**tabulatoR** wraps [Tabulator JS](https://tabulator.info/) for Shiny with minimal abstraction.
+
+- **Low barrier**: CRUD operations work out-of-the-box in R
+- **High ceiling**: Direct access to Tabulator JS API for custom behavior
+- **For users who want R convenience + JS power when needed**
+
+Whether you need a simple sortable table or complex custom interactions, tabulatoR gives you the flexibility to start simple and go deep when you need to.
 
 ## Key Features
 
-- **Column-first design** – Define columns with their own behavior, formatting, and interactivity.
-- **Direct JavaScript integration** – Use custom JS inline for limitless customization.
-- **Shiny-ready** – Built from the ground up for reactive, event-driven apps.
-- **Lightweight & flexible** – Only load what you need, without heavy dependencies.
+- **Column-first design** – Define columns with their own behavior, formatting, and interactivity
+- **Direct JavaScript integration** – Use custom JS inline for limitless customization
+- **Shiny-ready** – Built from the ground up for reactive, event-driven apps
+- **Lightweight & flexible** – Only load what you need, without heavy dependencies
 
 ## Quick Start
 
 ```r
-# Install from GitHub
-# remotes::install_github("yourusername/tabulatoR")
+# remotes::install_github("kent-orr/tabulatoR")
+library(shiny); library(tabulatoR)
 
-library(shiny)
-library(tabulatoR)
-
-ui <- fluidPage(
-  tabulatorOutput("my_table")
+shinyApp(
+  ui = fluidPage(tabulatoROutput("table"), verbatimTextOutput("edits")),
+  server = function(input, output) {
+    output$table <- renderTabulatoR(head(cars), editable = TRUE)
+    output$edits <- renderPrint(str(input$table))
+  }
 )
-
-server <- function(input, output, session) {
-  output$my_table <- renderTabulator({
-    tabulator(iris, columns = list(
-      list(title = "Sepal.Length", field = "Sepal.Length", sorter = "number"),
-      list(title = "Species", field = "Species", sorter = "string")
-    ))
-  })
-}
-
-shinyApp(ui, server)
 ```
