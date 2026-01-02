@@ -1,6 +1,6 @@
 Package: tabulatoR
 Title: Tabulator Integration for Shiny Applications
-Version: 0.0.0.9002
+Version: 0.0.1
 Authors@R:
     person("Kent", "Orr", , "orr.kent@pawpawanalytics.com", role = c("aut", "cre"))
 Description: Provides an interface for integrating Tabulator tables into Shiny applications.

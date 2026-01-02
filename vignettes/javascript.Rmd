@@ -53,7 +53,7 @@ list(
     list(name = "Alice", age = 30, city = "NYC"),
     list(name = "Bob", age = 25, city = "LA")
   ),
-  columns = list(
+  columns = c(
     list(title = "Name", field = "name", sorter = "string"),
     list(title = "Age", field = "age", editor = "number", validator = "min:0"),
     list(title = "City", field = "city", editor = "input")
@@ -65,8 +65,8 @@ list(
 ```
 
 Notice the one-to-one correspondence:
-- JSON objects `{}` → R named lists `list()`
-- JSON arrays `[]` → R lists `list()`
+- JSON objects `{}` → R named lists `list()`  
+- JSON arrays `[]` → R vector `c()`  
 - JSON booleans `true/false` → R logicals `TRUE/FALSE`
 - JSON strings and numbers remain the same
 
@@ -101,15 +101,13 @@ library(shiny)
 library(tabulatoR)
 
 ui <- fluidPage(
-  tab_source(),  # Load Tabulator CSS/JS from CDN
-  tabulatorOutput("myTable")
+  tabulatoROutput("myTable")
 )
 
 server <- function(input, output, session) {
   output$myTable <- renderTabulatoR(
     mtcars,
     columns = c(
-      Column("Model", "model"),
       Column("MPG", "mpg", .editor = "number"),
       Column("Cylinders", "cyl", .editor = "number")
     ),
@@ -223,7 +221,7 @@ You might wonder why tabulatoR uses this `js()` wrapper approach instead of R's 
 
 When you have deeply nested Tabulator configurations—like formatters within column definitions, validators with custom logic, or complex event handlers that reference other functions—standard JSON serialization fails to preserve the executable function references. The `js()` approach allows these custom functions and formulas to be passed through deeply nested structures and properly reconstructed on the JavaScript side.
 
-While this isn't the most ergonomic approach from an R perspective, it gives you full access to Tabulator's powerful JavaScript API without limitations on nesting depth or complexity.
+While this isn't the most ergonomic approach from an R perspective, it gives you full access to Tabulator's powerful JavaScript API without limitations on nesting depth or complexity. Be warned too, that advanced shiny users are likely to conflict with `shinyjs::js()`
 
 #### Available Tabulator Events
 
